@@ -1,0 +1,39 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { COUPLE, WEDDING } from "@/lib/constants";
+import { fadeUp, VIEWPORT } from "@/hooks/useScrollAnimation";
+
+export default function Footer() {
+  return (
+    <footer className="relative py-20 md:py-28 bg-charcoal dark:bg-cream overflow-hidden">
+      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT}
+          className="flex flex-col items-center text-center gap-6"
+        >
+          {/* Monogram */}
+          <p
+            className="font-body text-cream/20 dark:text-charcoal/20"
+            style={{ fontSize: "clamp(4rem, 10vw, 8rem)", letterSpacing: "-0.02em", lineHeight: 1 }}
+          >
+            {COUPLE.partner1[0]}&thinsp;&amp;&thinsp;{COUPLE.partner2[0]}
+          </p>
+
+          <div className="w-8 h-px bg-cream/15 dark:bg-charcoal/15" />
+
+          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/35 dark:text-charcoal/35">
+            {WEDDING.date} · {WEDDING.location}
+          </p>
+
+          <p className="font-body text-[9px] tracking-[0.2em] uppercase text-cream/20 dark:text-charcoal/20 mt-8">
+            Made with love
+          </p>
+        </motion.div>
+      </div>
+    </footer>
+  );
+}
