@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { NOTE_POEM } from "@/lib/constants";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
@@ -12,56 +13,86 @@ export default function Timeline() {
       id="story"
       className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
-      <div className="max-w-3xl mx-auto px-8 md:px-20 lg:px-32">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="mb-16 md:mb-20"
-        >
-          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
-            A note
-          </p>
-          <h2
-            className="font-display text-charcoal dark:text-cream"
-            style={{ fontSize: "clamp(2.5rem, 6vw, 5.5rem)", letterSpacing: "-0.025em", lineHeight: 0.95 }}
-          >
-            A Note
-          </h2>
-        </motion.div>
+      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
+        <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="flex flex-col"
-        >
-          {NOTE_POEM.map((line, i) =>
-            line === "" ? (
-              <motion.div key={i} variants={staggerItem} className="h-6" />
-            ) : (
-              <motion.p
-                key={i}
-                variants={staggerItem}
-                className="font-body text-charcoal/70 dark:text-cream/60 leading-relaxed"
-                style={{ fontSize: "clamp(1rem, 1.8vw, 1.25rem)" }}
+          {/* Left — poem content */}
+          <div className="relative z-10">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={VIEWPORT}
+              className="mb-16 md:mb-20"
+            >
+              <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
+                A note
+              </p>
+              <h2
+                className="font-display text-charcoal dark:text-cream"
+                style={{ fontSize: "clamp(2.5rem, 6vw, 5.5rem)", letterSpacing: "-0.025em", lineHeight: 0.95 }}
               >
-                {line}
-              </motion.p>
-            )
-          )}
-        </motion.div>
+                A Note
+              </h2>
+            </motion.div>
 
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          whileInView={{ scaleX: 1, opacity: 1 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.4, ease: EXPO }}
-          style={{ transformOrigin: "left center" }}
-          className="w-16 h-px bg-charcoal/20 dark:bg-cream/20 mt-16"
-        />
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={VIEWPORT}
+              className="flex flex-col"
+            >
+              {NOTE_POEM.map((line, i) =>
+                line === "" ? (
+                  <motion.div key={i} variants={staggerItem} className="h-6" />
+                ) : (
+                  <motion.p
+                    key={i}
+                    variants={staggerItem}
+                    className="font-body text-charcoal/70 dark:text-cream/60 leading-relaxed"
+                    style={{ fontSize: "clamp(1rem, 1.8vw, 1.25rem)" }}
+                  >
+                    {line}
+                  </motion.p>
+                )
+              )}
+            </motion.div>
+
+            <motion.div
+              initial={{ scaleX: 0, opacity: 0 }}
+              whileInView={{ scaleX: 1, opacity: 1 }}
+              viewport={VIEWPORT}
+              transition={{ duration: 1.4, ease: EXPO }}
+              style={{ transformOrigin: "left center" }}
+              className="w-16 h-px bg-charcoal/20 dark:bg-cream/20 mt-16"
+            />
+          </div>
+
+          {/* Right — couple illustration */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={VIEWPORT}
+            transition={{ duration: 1.6, ease: EXPO, delay: 0.4 }}
+            className="hidden md:flex items-center justify-center pointer-events-none select-none"
+            style={{
+              maskImage: "radial-gradient(ellipse 80% 90% at 60% 50%, black 30%, transparent 80%)",
+              WebkitMaskImage: "radial-gradient(ellipse 80% 90% at 60% 50%, black 30%, transparent 80%)",
+            }}
+          >
+            <Image
+              src="/illustrations/couple_1x.webp"
+              alt="Tina and Emmanuel"
+              width={1376}
+              height={768}
+              sizes="(max-width: 768px) 50vw, 40vw"
+              className="w-full h-auto object-contain opacity-75 dark:opacity-75"
+              draggable={false}
+            />
+          </motion.div>
+
+        </div>
       </div>
     </section>
   );
