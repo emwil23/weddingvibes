@@ -50,7 +50,7 @@ export default function RootLayout({
       <body className="grain">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange={false}
         >

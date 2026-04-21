@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { MapPin, Plane, Train } from "lucide-react";
 import { VENUE, TRAVEL, ON_THE_DAY, ON_THE_DAY_NOTE } from "@/lib/constants";
@@ -51,7 +52,27 @@ export default function Location() {
       id="details"
       className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
+      {/* Mountain background — blended into section */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none select-none"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          maskComposite: "intersect",
+          WebkitMaskComposite: "destination-in",
+        }}
+      >
+        <Image
+          src="/illustrations/mountain_1x.webp"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 100vw, 100vw"
+          className="object-cover opacity-[0.12] dark:opacity-[0.07]"
+          draggable={false}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
 
         {/* Section heading */}
         <motion.div
@@ -182,6 +203,28 @@ export default function Location() {
           </div>
         </motion.div>
 
+        {/* Save the date animation */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={VIEWPORT}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none"
+        >
+          <div className="w-full md:w-2/3 rounded-3xl overflow-hidden">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto"
+            >
+              <source src="/illustrations/save_the_date_keyed.webm" type="video/webm" />
+              <source src="/illustrations/save_the_date.mp4" type="video/mp4" />
+            </video>
+          </div>
+        </motion.div>
+
         {/* Closing quote */}
         <motion.div
           initial={{ scaleX: 0 }}
@@ -202,7 +245,7 @@ export default function Location() {
           In the land of rivers and tea, our story finds its moment.
         </motion.p>
 
-      </div>
+        </div>
     </section>
   );
 }

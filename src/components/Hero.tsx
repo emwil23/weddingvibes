@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { COUPLE, WEDDING, HERO_TAGLINE } from "@/lib/constants";
 
@@ -30,11 +31,49 @@ const subtleVariant = {
 };
 
 export default function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   return (
     <section
       id="hero"
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-cream dark:bg-charcoal"
+      style={{
+        // Vignette on the section itself — fades all edges to background
+        boxShadow: "inset 0 0 120px 60px var(--background)",
+      }}
     >
+      {/* Background video — plays once, freezes on last frame */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          maskImage: "radial-gradient(ellipse 75% 70% at center, black 20%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse 75% 70% at center, black 20%, transparent 75%)",
+        }}
+      >
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          onCanPlay={() => {
+            if (videoRef.current) videoRef.current.playbackRate = 0.4;
+          }}
+          onEnded={() => {
+            if (videoRef.current) videoRef.current.pause();
+          }}
+          className="w-full h-full object-cover"
+          style={{ opacity: 0.45 }}
+        >
+          {/* Mobile — smallest, loads fastest */}
+          <source src="/illustrations/white_rose_720.webm" type="video/webm" media="(max-width: 768px)" />
+          <source src="/illustrations/white_rose_720.mp4" type="video/mp4" media="(max-width: 768px)" />
+          {/* Desktop — WebM first (better compression), MP4 fallback */}
+          <source src="/illustrations/white_rose_1080.webm" type="video/webm" />
+          <source src="/illustrations/white_rose_720.mp4" type="video/mp4" />
+        </video>
+      </div>
+
       {/* Main content */}
       <motion.div
         className="relative z-10 flex flex-col items-center text-center px-6"
@@ -56,7 +95,7 @@ export default function Hero() {
           className="font-display text-charcoal dark:text-cream select-none"
           style={{ fontSize: "clamp(3.5rem, 9vw, 9rem)", letterSpacing: "0.01em", lineHeight: 1.2 }}
         >
-          {COUPLE.partner1}
+          {COUPLE.partner2}
         </motion.h1>
 
         {/* Ampersand separator */}
@@ -72,18 +111,18 @@ export default function Hero() {
         <motion.h1
           variants={lineVariant}
           className="font-display text-charcoal dark:text-cream select-none"
-          style={{ fontSize: "clamp(3.5rem, 9vw, 9rem)", letterSpacing: "0.01em", lineHeight: 1.0 }}
+          style={{ fontSize: "clamp(3.5rem, 9vw, 9rem)", letterSpacing: "0.01em", lineHeight: 1.5 }}
         >
-          {COUPLE.partner2}
+          {COUPLE.partner1}
         </motion.h1>
 
-        {/* Date + location */}
+        {/* Date + location + tagline */}
         <motion.div
           variants={subtleVariant}
           className="mt-12 flex flex-col items-center gap-1"
         >
           {HERO_TAGLINE.map((line, i) => (
-            <p key={i} className="font-body text-[12px] tracking-[0.08em] text-charcoal/45 dark:text-cream/40 italic">
+            <p key={i} className="font-body text-[12px] tracking-[0.08em] text-charcoal/40 dark:text-cream/35 italic">
               {line}
             </p>
           ))}

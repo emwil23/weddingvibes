@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { BLEND_POEM } from "@/lib/constants";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
@@ -12,7 +13,27 @@ export default function Gallery() {
       id="gallery"
       className="relative py-32 md:py-48 bg-charcoal dark:bg-cream overflow-hidden"
     >
-      <div className="max-w-3xl mx-auto px-8 md:px-20 lg:px-32">
+      {/* Mountain panorama background — blended into section */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none select-none"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          maskComposite: "intersect",
+          WebkitMaskComposite: "destination-in",
+        }}
+      >
+        <Image
+          src="/illustrations/mountain_panorama_1x.webp"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 100vw, 100vw"
+          className="object-cover opacity-[0.12] dark:opacity-[0.07]"
+          draggable={false}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-3xl mx-auto px-8 md:px-20 lg:px-32">
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -87,7 +108,9 @@ export default function Gallery() {
         >
           {BLEND_POEM.closing}
         </motion.p>
-      </div>
+
+
+        </div>
     </section>
   );
 }

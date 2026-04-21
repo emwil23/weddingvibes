@@ -13,7 +13,27 @@ export default function Timeline() {
       id="story"
       className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
+      {/* Mountain background — blended into section */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none select-none"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          maskComposite: "intersect",
+          WebkitMaskComposite: "destination-in",
+        }}
+      >
+        <Image
+          src="/illustrations/mountain_close_1x.webp"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 100vw, 100vw"
+          className="object-cover opacity-[0.12] dark:opacity-[0.07]"
+          draggable={false}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
         <div className="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
 
           {/* Left — poem content */}
@@ -69,31 +89,28 @@ export default function Timeline() {
             />
           </div>
 
-          {/* Right — couple illustration */}
+          {/* Right — walking animation */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={VIEWPORT}
             transition={{ duration: 1.6, ease: EXPO, delay: 0.4 }}
-            className="hidden md:flex items-center justify-center pointer-events-none select-none"
-            style={{
-              maskImage: "radial-gradient(ellipse 80% 90% at 60% 50%, black 30%, transparent 80%)",
-              WebkitMaskImage: "radial-gradient(ellipse 80% 90% at 60% 50%, black 30%, transparent 80%)",
-            }}
+            className="flex items-center justify-center pointer-events-none select-none"
           >
-            <Image
-              src="/illustrations/couple_1x.webp"
-              alt="Tina and Emmanuel"
-              width={1376}
-              height={768}
-              sizes="(max-width: 768px) 50vw, 40vw"
-              className="w-full h-auto object-contain opacity-75 dark:opacity-75"
-              draggable={false}
-            />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full md:w-[130%] h-auto translate-x-[8%] md:translate-x-0"
+            >
+              <source src="/illustrations/walking_keyed.webm" type="video/webm" />
+              <source src="/illustrations/Green_clear_background_202604212207.mp4" type="video/mp4" />
+            </video>
           </motion.div>
 
         </div>
-      </div>
+        </div>
     </section>
   );
 }
