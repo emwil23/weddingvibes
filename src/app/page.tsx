@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import LoadingScreen from "@/components/LoadingScreen";
 import CustomCursor from "@/components/CustomCursor";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
@@ -38,6 +39,7 @@ export default function Home() {
 
   return (
     <main className="relative">
+      <LoadingScreen />
       <CustomCursor />
       <Navbar />
       {/* Left gutter offset on desktop so content isn't behind the fixed nav */}

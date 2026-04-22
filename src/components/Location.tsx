@@ -217,6 +217,7 @@ export default function Location() {
               loop
               muted
               playsInline
+              preload="auto"
               className="w-full h-auto"
             >
               <source src="/illustrations/save_the_date_keyed.webm" type="video/webm" />

@@ -102,7 +102,8 @@ export default function Timeline() {
               loop
               muted
               playsInline
-              className="w-full md:w-[130%] h-auto translate-x-[8%] md:translate-x-0"
+              preload="auto"
+              className="w-full md:w-[130%] h-auto -ml-40 md:ml-0"
             >
               <source src="/illustrations/walking_keyed.webm" type="video/webm" />
               <source src="/illustrations/Green_clear_background_202604212207.mp4" type="video/mp4" />

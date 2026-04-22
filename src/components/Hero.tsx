@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { COUPLE, WEDDING, HERO_TAGLINE } from "@/lib/constants";
 
@@ -33,6 +33,17 @@ const subtleVariant = {
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  useEffect(() => {
+    function startVideo() {
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 0.4;
+        videoRef.current.play();
+      }
+    }
+    window.addEventListener("site-ready", startVideo, { once: true });
+    return () => window.removeEventListener("site-ready", startVideo);
+  }, []);
+
   return (
     <section
       id="hero"
@@ -52,13 +63,9 @@ export default function Hero() {
       >
         <video
           ref={videoRef}
-          autoPlay
           muted
           playsInline
           preload="auto"
-          onCanPlay={() => {
-            if (videoRef.current) videoRef.current.playbackRate = 0.4;
-          }}
           onEnded={() => {
             if (videoRef.current) videoRef.current.pause();
           }}
