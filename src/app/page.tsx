@@ -11,6 +11,7 @@ import Gallery from "@/components/Gallery";
 import Location from "@/components/Location";
 import RSVP from "@/components/RSVP";
 import Footer from "@/components/Footer";
+import MusicPlayer from "@/components/MusicPlayer";
 
 export default function Home() {
   // Initialize Lenis smooth scroll
@@ -40,6 +41,7 @@ export default function Home() {
   return (
     <main className="relative">
       <LoadingScreen />
+      <MusicPlayer />
       <CustomCursor />
       <Navbar />
       {/* Left gutter offset on desktop so content isn't behind the fixed nav */}

@@ -26,12 +26,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tina & Emmanuel — September 20, 2025",
+  title: "Tina & Emmanuel — July 21, 2026",
   description:
-    "Join us to celebrate the wedding of Tina and Emmanuel in Rome, Italy.",
+    "Join us to celebrate the wedding of Tina and Emmanuel in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
   openGraph: {
-    title: "Tina & Emmanuel — September 20, 2025",
-    description: "A wedding celebration in Rome, Italy.",
+    title: "Tina & Emmanuel — July 21, 2026",
+    description: "A wedding celebration in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
     type: "website",
   },
 };
@@ -50,7 +50,7 @@ export default function RootLayout({
       <body className="grain">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange={false}
         >

@@ -34,6 +34,19 @@ export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Pick source based on screen width — media attribute on <source> is unreliable across browsers
+    const isMobile = window.innerWidth <= 768;
+    const canWebM = video.canPlayType("video/webm") !== "";
+    video.src = isMobile
+      ? "/illustrations/bouquet_480.mp4"
+      : canWebM
+        ? "/illustrations/bouquet_720.webm"
+        : "/illustrations/Bouquet_animated_black_202604261838.mp4";
+    video.load();
+
     function startVideo() {
       if (videoRef.current) {
         videoRef.current.playbackRate = 0.4;
@@ -50,7 +63,7 @@ export default function Hero() {
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-cream dark:bg-charcoal"
       style={{
         // Vignette on the section itself — fades all edges to background
-        boxShadow: "inset 0 0 120px 60px var(--background)",
+        boxShadow: "inset 0 0 80px 30px var(--background)",
       }}
     >
       {/* Background video — plays once, freezes on last frame */}
@@ -70,14 +83,8 @@ export default function Hero() {
             if (videoRef.current) videoRef.current.pause();
           }}
           className="w-full h-full object-cover"
-          style={{ opacity: 0.45 }}
+          style={{ opacity: 0.55 }}
         >
-          {/* Mobile — smallest, loads fastest */}
-          <source src="/illustrations/white_rose_720.webm" type="video/webm" media="(max-width: 768px)" />
-          <source src="/illustrations/white_rose_720.mp4" type="video/mp4" media="(max-width: 768px)" />
-          {/* Desktop — WebM first (better compression), MP4 fallback */}
-          <source src="/illustrations/white_rose_1080.webm" type="video/webm" />
-          <source src="/illustrations/white_rose_720.mp4" type="video/mp4" />
         </video>
       </div>
 

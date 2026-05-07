@@ -1,47 +1,42 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+
+function formatName(raw: string): string {
+  return raw
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
 
 export default function LoadingScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const pathname = usePathname();
+  const slug = pathname.replace(/^\//, "").split("/")[0];
+  const recipient = slug ? formatName(slug) : null;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
-    let frame: number;
-    const start = performance.now();
-    const duration = 5000;
+    // Kick bar to 92% via CSS transition — reliable across all browsers
+    const t1 = setTimeout(() => setProgress(92), 50);
 
-    function tick(now: number) {
-      const elapsed = now - start;
-      const p = Math.min((elapsed / duration) * 95, 95);
-      setProgress(p);
-      if (p < 95) frame = requestAnimationFrame(tick);
-    }
-    frame = requestAnimationFrame(tick);
-
-    // Minimum 5s + window load, with a hard 12s cap so we never get stuck
-    const minWait    = new Promise<void>((res) => setTimeout(res, 5000));
-    const hardCap    = new Promise<void>((res) => setTimeout(res, 12000));
-    const windowLoad = new Promise<void>((res) => {
-      if (document.readyState === "complete") res();
-      else window.addEventListener("load", () => res(), { once: true });
-    });
-
-    Promise.all([minWait, Promise.race([windowLoad, hardCap])]).then(() => {
-      cancelAnimationFrame(frame);
+    // Dismiss after 5s fixed — don't block on window.onload (videos are too large over network)
+    const t2 = setTimeout(() => {
       setProgress(100);
       setTimeout(() => {
         setDone(true);
         document.body.style.overflow = "";
       }, 600);
-    });
+    }, 5000);
 
     return () => {
-      cancelAnimationFrame(frame);
+      clearTimeout(t1);
+      clearTimeout(t2);
       document.body.style.overflow = "";
     };
   }, []);
@@ -74,30 +69,57 @@ export default function LoadingScreen() {
             <source src="/illustrations/envelope.mp4" type="video/mp4" />
           </video>
 
-          {/* Name + date */}
-          <div className="absolute bottom-20 left-0 right-0 flex flex-col items-center z-10">
+          {/* Recipient name on envelope */}
+          {recipient && (
+            <div
+              className="absolute z-10 flex flex-col items-center"
+              style={{
+                top: "30%",
+                left: "52%",
+                transform: "translate(-50%, -50%) rotate(8deg)",
+              }}
+            >
+              <p className="font-body text-[9px] tracking-[0.3em] uppercase text-charcoal/50 mb-1">To</p>
+              <p
+                className="font-display text-charcoal/75"
+                style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", letterSpacing: "0.01em" }}
+              >
+                {recipient}
+              </p>
+            </div>
+          )}
+
+          {/* Name + date — on the envelope */}
+          <div
+            className="absolute z-10 flex flex-col items-center"
+            style={{
+              top: "45%",
+              left: "51%",
+              transform: "translate(-50%, -50%) rotate(8deg)",
+            }}
+          >
             <p
-              className="font-display text-cream/70"
-              style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
+              className="font-display text-charcoal/75"
+              style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", letterSpacing: "0.01em" }}
             >
               Emmanuel &amp; Tina
             </p>
-            <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/35 mt-3">
-              July 21, 2026 · Guwahati
+            <p className="font-body text-[9px] tracking-[0.3em] uppercase text-charcoal/45 mt-2">
+              July 27, 2026 · Guwahati
             </p>
           </div>
 
           {/* Progress bar — centered pill at bottom */}
           <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10">
             <div className="w-48 h-0.5 rounded-full overflow-hidden bg-cream/10">
-              <motion.div
+              <div
                 className="h-full rounded-full"
                 style={{
                   background: "linear-gradient(to right, #D4A5A0, #B87C77)",
                   boxShadow: "0 0 8px rgba(212, 165, 160, 0.6)",
+                  width: `${progress}%`,
+                  transition: progress === 0 ? "none" : progress < 100 ? "width 4.8s cubic-bezier(0.16, 1, 0.3, 1)" : "width 0.3s ease-out",
                 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
               />
             </div>
           </div>

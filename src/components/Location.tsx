@@ -56,8 +56,8 @@ export default function Location() {
       <div
         className="absolute inset-0 z-0 pointer-events-none select-none"
         style={{
-          maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+          maskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
           maskComposite: "intersect",
           WebkitMaskComposite: "destination-in",
         }}
@@ -67,7 +67,7 @@ export default function Location() {
           alt=""
           fill
           sizes="(max-width: 768px) 100vw, 100vw"
-          className="object-cover opacity-[0.12] dark:opacity-[0.07]"
+          className="object-cover opacity-[0.4] dark:opacity-[0.1]"
           draggable={false}
         />
       </div>
