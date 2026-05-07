@@ -26,11 +26,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tina & Emmanuel — July 21, 2026",
+  title: "Tina & Emmanuel — July 27, 2026",
   description:
     "Join us to celebrate the wedding of Tina and Emmanuel in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
   openGraph: {
-    title: "Tina & Emmanuel — July 21, 2026",
+    title: "Tina & Emmanuel — July 27, 2026",
     description: "A wedding celebration in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
     type: "website",
   },
