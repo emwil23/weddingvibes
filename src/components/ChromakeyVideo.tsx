@@ -11,18 +11,16 @@ interface Props {
   className?: string;
 }
 
-function rgbToHsv(r: number, g: number, b: number): [number, number, number] {
+function rgbToHue(r: number, g: number, b: number): number {
   r /= 255; g /= 255; b /= 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   const d = max - min;
+  if (d === 0) return 0;
   let h = 0;
-  if (d !== 0) {
-    if (max === r) h = ((g - b) / d) % 6;
-    else if (max === g) h = (b - r) / d + 2;
-    else h = (r - g) / d + 4;
-    h = (h * 60 + 360) % 360;
-  }
-  return [h, max === 0 ? 0 : d / max, max];
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
 }
 
 function isSafari() {
@@ -41,6 +39,7 @@ export default function ChromakeyVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
   const [useSafari, setUseSafari] = useState(false);
 
   useEffect(() => {
@@ -57,10 +56,20 @@ export default function ChromakeyVideo({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
-    const [keyH] = rgbToHsv(...keyColor);
+    const keyH = rgbToHue(...keyColor);
+    // Pre-compute loop constants
+    const softEdge = hueTolerance * 1.5;
+    const invSoftRange = 1 / (hueTolerance * 0.5);
 
-    function processFrame() {
+    function processFrame(timestamp: number) {
       if (!video || !canvas || !ctx || video.paused || video.ended) return;
+
+      // Throttle to ~24fps — matches source video rate, halves main-thread work
+      if (timestamp - lastTimeRef.current < 40) {
+        rafRef.current = requestAnimationFrame(processFrame);
+        return;
+      }
+      lastTimeRef.current = timestamp;
 
       if (canvas.width !== video.videoWidth) {
         canvas.width = video.videoWidth;
@@ -79,19 +88,27 @@ export default function ChromakeyVideo({
 
       const data = frame.data;
       for (let i = 0; i < data.length; i += 4) {
-        const [h, s] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
-        if (s < satMin) continue; // unsaturated pixel — never key out
+        // Inline HSV — avoids function call overhead across millions of pixels
+        const r = data[i] / 255;
+        const g = data[i + 1] / 255;
+        const b = data[i + 2] / 255;
+        const max = r > g ? (r > b ? r : b) : (g > b ? g : b);
+        const min = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        const d = max - min;
 
-        // Angular distance between pixel hue and key hue
+        if (d === 0 || d / max < satMin) continue; // achromatic or low saturation
+
+        let h = 0;
+        if (max === r) h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h = (h * 60 + 360) % 360;
+
         const hueDiff = Math.abs(((h - keyH + 540) % 360) - 180);
-
         if (hueDiff < hueTolerance) {
-          // Fully inside key range → fully transparent
           data[i + 3] = 0;
-        } else if (hueDiff < hueTolerance * 1.5) {
-          // Soft edge zone → fade out
-          const t = (hueDiff - hueTolerance) / (hueTolerance * 0.5);
-          data[i + 3] = Math.round(t * 255);
+        } else if (hueDiff < softEdge) {
+          data[i + 3] = Math.round((hueDiff - hueTolerance) * invSoftRange * 255);
         }
       }
 
@@ -100,6 +117,7 @@ export default function ChromakeyVideo({
     }
 
     function onPlay() {
+      lastTimeRef.current = 0;
       rafRef.current = requestAnimationFrame(processFrame);
     }
 
