@@ -32,7 +32,24 @@ export default function MusicPlayer() {
     }
 
     window.addEventListener("site-ready", tryAutoplay, { once: true });
-    return () => window.removeEventListener("site-ready", tryAutoplay);
+
+    // Play on first user interaction anywhere — satisfies browser gesture requirement
+    function onFirstGesture() {
+      tryAutoplay();
+      window.removeEventListener("touchstart", onFirstGesture);
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("scroll", onFirstGesture);
+    }
+    window.addEventListener("touchstart", onFirstGesture, { once: true, passive: true });
+    window.addEventListener("pointerdown", onFirstGesture, { once: true });
+    window.addEventListener("scroll", onFirstGesture, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener("site-ready", tryAutoplay);
+      window.removeEventListener("touchstart", onFirstGesture);
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("scroll", onFirstGesture);
+    };
   }, []);
 
   function toggle() {

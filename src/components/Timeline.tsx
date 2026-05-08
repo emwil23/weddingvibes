@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { NOTE_POEM } from "@/lib/constants";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
+import ChromakeyVideo from "@/components/ChromakeyVideo";
 
 const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -97,17 +98,12 @@ export default function Timeline() {
             transition={{ duration: 1.6, ease: EXPO, delay: 0.4 }}
             className="flex items-center justify-center pointer-events-none select-none"
           >
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
+            <ChromakeyVideo
+              webmSrc="/illustrations/walking_keyed.webm"
+              mp4Src="/illustrations/Green_clear_background_202604212207.mp4"
+              keyColor={[97, 133, 86]}
               className="w-full md:w-[130%] h-auto -ml-40 md:ml-0"
-            >
-              <source src="/illustrations/walking_keyed.webm" type="video/webm" />
-              <source src="/illustrations/Green_clear_background_202604212207.mp4" type="video/mp4" />
-            </video>
+            />
           </motion.div>
 
         </div>

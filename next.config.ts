@@ -12,8 +12,25 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
-    // Pin root to this project directory to silence multi-lockfile warning
     root: path.resolve(__dirname),
+  },
+  async headers() {
+    return [
+      {
+        source: "/illustrations/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
+      {
+        source: "/songs/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
+    ];
   },
 };
 

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MapPin, Plane, Train } from "lucide-react";
 import { VENUE, TRAVEL, ON_THE_DAY, ON_THE_DAY_NOTE } from "@/lib/constants";
 import { staggerContainer, staggerItem, fadeUp, VIEWPORT } from "@/hooks/useScrollAnimation";
+import ChromakeyVideo from "@/components/ChromakeyVideo";
 
 function VenueCard({
   type,
@@ -212,17 +213,14 @@ export default function Location() {
           className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none"
         >
           <div className="w-full md:w-2/3 rounded-3xl overflow-hidden">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
+            <ChromakeyVideo
+              webmSrc="/illustrations/save_the_date_keyed.webm"
+              mp4Src="/illustrations/save_the_date.mp4"
+              keyColor={[94, 159, 109]}
+              hueTolerance={40}
+              satMin={0.25}
               className="w-full h-auto"
-            >
-              <source src="/illustrations/save_the_date_keyed.webm" type="video/webm" />
-              <source src="/illustrations/save_the_date.mp4" type="video/mp4" />
-            </video>
+            />
           </div>
         </motion.div>
 
