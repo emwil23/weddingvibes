@@ -23,9 +23,12 @@ function rgbToHue(r: number, g: number, b: number): number {
   return (h * 60 + 360) % 360;
 }
 
-function isSafari() {
+function needsCanvasChromakey() {
   if (typeof navigator === "undefined") return false;
-  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const ua = navigator.userAgent;
+  // Firefox: our VP9 WebM encoding doesn't produce working dual-stream alpha
+  // Safari: VP9 WebM alpha not supported at all
+  return /firefox/i.test(ua) || /^((?!chrome|android).)*safari/i.test(ua);
 }
 
 export default function ChromakeyVideo({
@@ -40,14 +43,14 @@ export default function ChromakeyVideo({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const [useSafari, setUseSafari] = useState(false);
+  const [useCanvas, setUseCanvas] = useState(false);
 
   useEffect(() => {
-    setUseSafari(isSafari()); // detect after hydration — avoids SSR mismatch
+    setUseCanvas(needsCanvasChromakey()); // detect after hydration — avoids SSR mismatch
   }, []);
 
   useEffect(() => {
-    if (!useSafari) return;
+    if (!useCanvas) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -128,9 +131,9 @@ export default function ChromakeyVideo({
       video.removeEventListener("play", onPlay);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [useSafari]);
+  }, [useCanvas]);
 
-  if (!useSafari) {
+  if (!useCanvas) {
     return (
       <video
         autoPlay
