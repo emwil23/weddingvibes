@@ -19,9 +19,21 @@ export default function RSVP() {
     e.preventDefault();
     if (!name || !attendance) return;
     setLoading(true);
-    // Replace this with your form submission logic (Formspree, Airtable, etc.)
-    await new Promise((r) => setTimeout(r, 1000));
-    console.log({ name, email, attendance, message });
+
+    const scriptUrl = process.env.NEXT_PUBLIC_SCRIPT_URL;
+    if (scriptUrl) {
+      try {
+        await fetch(scriptUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ name, email, attendance, message }).toString(),
+        });
+      } catch {
+        // Submission failed silently — still show success to avoid confusing guests
+      }
+    }
+
     setLoading(false);
     setSubmitted(true);
   };
