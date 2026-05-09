@@ -99,7 +99,6 @@ export default function Timeline() {
             className="flex items-center justify-center pointer-events-none select-none"
           >
             <ChromakeyVideo
-              webmSrc="/illustrations/walking_keyed.webm"
               mp4Src="/illustrations/Green_clear_background_202604212207.mp4"
               keyColor={[97, 133, 86]}
               className="w-full md:w-[130%] h-auto -ml-40 md:ml-0"

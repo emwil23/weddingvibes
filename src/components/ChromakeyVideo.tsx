@@ -3,36 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 
 interface Props {
-  webmSrc: string;
   mp4Src: string;
   keyColor?: [number, number, number];
-  hueTolerance?: number;   // degrees either side of key hue, default 30
-  satMin?: number;         // min saturation to key (0–1), default 0.15
+  hueTolerance?: number;
+  satMin?: number;
   className?: string;
 }
 
-function rgbToHue(r: number, g: number, b: number): number {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const d = max - min;
-  if (d === 0) return 0;
-  let h = 0;
-  if (max === r) h = ((g - b) / d) % 6;
-  else if (max === g) h = (b - r) / d + 2;
-  else h = (r - g) / d + 4;
-  return (h * 60 + 360) % 360;
-}
-
-function needsCanvasChromakey() {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent;
-  // Firefox: our VP9 WebM encoding doesn't produce working dual-stream alpha
-  // Safari: VP9 WebM alpha not supported at all
-  return /firefox/i.test(ua) || /^((?!chrome|android).)*safari/i.test(ua);
-}
-
 export default function ChromakeyVideo({
-  webmSrc,
   mp4Src,
   keyColor = [97, 133, 86],
   hueTolerance = 30,
@@ -43,14 +21,13 @@ export default function ChromakeyVideo({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const [useCanvas, setUseCanvas] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // Trigger canvas setup after hydration
+  useEffect(() => { setReady(true); }, []);
 
   useEffect(() => {
-    setUseCanvas(needsCanvasChromakey()); // detect after hydration — avoids SSR mismatch
-  }, []);
-
-  useEffect(() => {
-    if (!useCanvas) return;
+    if (!ready) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -59,15 +36,24 @@ export default function ChromakeyVideo({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
-    const keyH = rgbToHue(...keyColor);
-    // Pre-compute loop constants
+    // Pre-compute key hue
+    const [kr, kg, kb] = keyColor.map((c) => c / 255);
+    const kmax = Math.max(kr, kg, kb), kmin = Math.min(kr, kg, kb), kd = kmax - kmin;
+    let keyH = 0;
+    if (kd !== 0) {
+      if (kmax === kr) keyH = ((kg - kb) / kd) % 6;
+      else if (kmax === kg) keyH = (kb - kr) / kd + 2;
+      else keyH = (kr - kg) / kd + 4;
+      keyH = (keyH * 60 + 360) % 360;
+    }
+
     const softEdge = hueTolerance * 1.5;
     const invSoftRange = 1 / (hueTolerance * 0.5);
 
     function processFrame(timestamp: number) {
       if (!video || !canvas || !ctx || video.paused || video.ended) return;
 
-      // Throttle to ~24fps — matches source video rate, halves main-thread work
+      // Throttle to ~24fps
       if (timestamp - lastTimeRef.current < 40) {
         rafRef.current = requestAnimationFrame(processFrame);
         return;
@@ -91,7 +77,6 @@ export default function ChromakeyVideo({
 
       const data = frame.data;
       for (let i = 0; i < data.length; i += 4) {
-        // Inline HSV — avoids function call overhead across millions of pixels
         const r = data[i] / 255;
         const g = data[i + 1] / 255;
         const b = data[i + 2] / 255;
@@ -99,7 +84,7 @@ export default function ChromakeyVideo({
         const min = r < g ? (r < b ? r : b) : (g < b ? g : b);
         const d = max - min;
 
-        if (d === 0 || d / max < satMin) continue; // achromatic or low saturation
+        if (d === 0 || d / max < satMin) continue;
 
         let h = 0;
         if (max === r) h = ((g - b) / d) % 6;
@@ -131,23 +116,7 @@ export default function ChromakeyVideo({
       video.removeEventListener("play", onPlay);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [useCanvas]);
-
-  if (!useCanvas) {
-    return (
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className={className}
-      >
-        <source src={webmSrc} type="video/webm" />
-        <source src={mp4Src} type="video/mp4" />
-      </video>
-    );
-  }
+  }, [ready]);
 
   return (
     <div className={`relative ${className ?? ""}`}>
