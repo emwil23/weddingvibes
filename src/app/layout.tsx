@@ -26,6 +26,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tinaandemmanuel.me"),
   title: "Emmanuel & Tina — July 27, 2026",
   description:
     "Join us to celebrate the wedding of Tina and Emmanuel in Guwahati on July 27, 2026. A day of love, laughter, and unforgettable memories.",
