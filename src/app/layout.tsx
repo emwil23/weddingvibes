@@ -26,13 +26,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tina & Emmanuel — July 27, 2026",
+  title: "Emmanuel & Tina — July 27, 2026",
   description:
-    "Join us to celebrate the wedding of Tina and Emmanuel in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
+    "Join us to celebrate the wedding of Tina and Emmanuel in Guwahati on July 27, 2026. A day of love, laughter, and unforgettable memories.",
   openGraph: {
-    title: "Tina & Emmanuel — July 27, 2026",
-    description: "A wedding celebration in Guwahati on July 21, 2026. A day of love, laughter, and unforgettable memories.",
+    title: "Emmanuel & Tina — July 27, 2026",
+    description: "A wedding celebration in Guwahati on July 27, 2026. A day of love, laughter, and unforgettable memories.",
     type: "website",
+    images: [
+      {
+        url: "/illustrations/ghibli_couple_og.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Emmanuel & Tina — July 27, 2026",
+      },
+    ],
   },
 };
 

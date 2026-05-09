@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
 import { COUPLE, WEDDING } from "@/lib/constants";
@@ -124,10 +125,26 @@ export default function RSVP() {
               Please let us know if you can make it.
             </motion.p>
 
+            {/* Couple image */}
+            <motion.div
+              variants={staggerItem}
+              className="mt-10 rounded-2xl overflow-hidden"
+            >
+              <Image
+                src="/illustrations/ghibli_couple.jpeg"
+                alt="Tina & Emmanuel"
+                width={1376}
+                height={768}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                className="w-full h-auto object-cover"
+                priority
+              />
+            </motion.div>
+
             {/* Decorative date */}
             <motion.div
               variants={staggerItem}
-              className="mt-16 pt-8 border-t border-charcoal/10 dark:border-cream/10"
+              className="mt-8 pt-8 border-t border-charcoal/10 dark:border-cream/10"
             >
               <p className="font-body text-charcoal/20 dark:text-cream/15"
                 style={{ fontSize: "clamp(1rem, 3vw, 2rem)", letterSpacing: "-0.01em" }}
