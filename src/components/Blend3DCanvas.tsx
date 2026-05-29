@@ -164,7 +164,7 @@ function ParticleBlend({ isMobile }: { isMobile: boolean }) {
         pointsRef.current.rotation.y *= (1.0 - t);
         
         // Smoothly shift the Y coordinate down to align with the "T&E" monogram in the footer
-        pointsRef.current.position.y = (isMobile ? -3.1 : -1.8) * t;
+        pointsRef.current.position.y = (isMobile ? -2.8 : -1.8) * t;
         
         // Scale the heart to be larger on desktop, but shrink it on mobile to fit the narrow viewport
         pointsRef.current.scale.setScalar(isMobile ? (1.0 - 0.42 * t) : (1.0 + 0.3 * t));
