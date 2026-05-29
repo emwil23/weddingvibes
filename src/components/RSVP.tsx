@@ -85,7 +85,7 @@ export default function RSVP() {
   return (
     <section
       id="rsvp"
-      className="relative py-32 md:py-48 bg-cream-dark dark:bg-charcoal-light overflow-hidden"
+      className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
         <div className="grid lg:grid-cols-2 gap-20 lg:gap-32 items-start">
@@ -160,6 +160,7 @@ export default function RSVP() {
             initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT}
+            className="relative z-10 backdrop-blur-md bg-cream/70 dark:bg-charcoal/70 p-8 md:p-12 rounded-3xl  dark:border-cream/10"
           >
             <AnimatePresence mode="wait">
               {!submitted ? (

@@ -12,7 +12,7 @@ export const WEDDING = {
   date: "July 27, 2026",
   dateShort: "07.27.2026",
   dayOfWeek: "Monday",
-  time: "11:00 AM",
+  time: "10:30 AM",
   hashtag: "#TinaAndEmmanuel",
   location: "Guwahati, Assam",
   rsvpDeadline: "July 1, 2026",
@@ -63,7 +63,7 @@ export const VENUE = {
     name: "JD Grand",
     address: "Guwahati, Assam",
     city: "",
-    time: "11:00 AM",
+    time: "10:30 AM",
     description:
       "Beneath warm skies and quiet anticipation, the beginning of something forever.",
   },
@@ -71,7 +71,7 @@ export const VENUE = {
     name: "JD Grand",
     address: "Guwahati, Assam",
     city: "",
-    time: "2:00 PM",
+    time: "After wedding reception to follow",
     description:
       "An afternoon of laughter, light, and celebrations that linger into memory.",
   },
@@ -93,8 +93,8 @@ export const TRAVEL = [
 ];
 
 export const ON_THE_DAY = [
-  { time: "11:00 AM", event: "Ceremony" },
-  { time: "2:00 PM", event: "Reception" },
+  { time: "10:30 AM", event: "Ceremony" },
+  { time: "After Ceremony", event: "Reception to follow" },
 ];
 
 export const ON_THE_DAY_NOTE = [

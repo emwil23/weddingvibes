@@ -7,7 +7,7 @@ import { fadeUp, VIEWPORT } from "@/hooks/useScrollAnimation";
 export default function Footer() {
   return (
     <footer className="relative py-20 md:py-28 bg-charcoal dark:bg-cream overflow-hidden">
-      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
+      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
         <motion.div
           variants={fadeUp}
           initial="hidden"
