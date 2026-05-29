@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import ChromakeyVideo from "@/components/ChromakeyVideo";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
 import { COUPLE, WEDDING } from "@/lib/constants";
 
@@ -125,19 +125,17 @@ export default function RSVP() {
               Please let us know if you can make it.
             </motion.p>
 
-            {/* Couple image */}
+            {/* Couple video */}
             <motion.div
               variants={staggerItem}
-              className="mt-10 rounded-2xl overflow-hidden"
+              className="mt-10"
             >
-              <Image
-                src="/illustrations/ghibli_couple.jpeg"
-                alt="Tina & Emmanuel"
-                width={1376}
-                height={768}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                className="w-full h-auto object-cover"
-                priority
+              <ChromakeyVideo
+                mp4Src="/illustrations/rsvp.mp4"
+                keyColor={[77, 158, 99]}
+                hueTolerance={35}
+                satMin={0.2}
+                className="w-full h-auto"
               />
             </motion.div>
 
