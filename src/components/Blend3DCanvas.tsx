@@ -79,7 +79,7 @@ function ParticleBlend({ isMobile }: { isMobile: boolean }) {
   const particleColor = new THREE.Color(isLightBg ? "#B87C77" : "#EED6D3");
 
   // Mobile optimization: 75% fewer particles
-  const particleCount = isMobile ? 1500 : 7500;
+  const particleCount = isMobile ? 200 : 1000;
 
   const [positions, targets, sizes] = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
