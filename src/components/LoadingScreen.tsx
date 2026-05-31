@@ -27,7 +27,8 @@ const MOBILE_ASSETS = [
   "/illustrations/ghibli_couple.jpeg",
 ];
 
-const MAX_WAIT_MS = 12000; // hard fallback — never stuck even if a fetch hangs
+const MIN_SHOW_MS = 5000;  // show welcome video at least this long once ready
+const MAX_WAIT_MS = 15000; // hard fallback — never stuck even if a fetch hangs
 
 export default function LoadingScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,6 +44,8 @@ export default function LoadingScreen() {
   const totalRef = useRef(1);
   const finishedRef = useRef(false);
   const videoCountedRef = useRef(false);
+  const loadDoneRef = useRef(false);   // all assets fetched + video ready
+  const minElapsedRef = useRef(false); // welcome video shown >= MIN_SHOW_MS
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -54,18 +57,31 @@ export default function LoadingScreen() {
     }, 500);
   }, []);
 
+  // Reveal only once everything is loaded AND the video has shown long enough
+  const tryFinish = useCallback(() => {
+    if (loadDoneRef.current && minElapsedRef.current) finish();
+  }, [finish]);
+
   const bump = useCallback(() => {
     loadedRef.current += 1;
     setProgress(Math.min(99, Math.round((loadedRef.current / totalRef.current) * 100)));
-    if (loadedRef.current >= totalRef.current) finish();
-  }, [finish]);
+    if (loadedRef.current >= totalRef.current) {
+      loadDoneRef.current = true;
+      tryFinish();
+    }
+  }, [tryFinish]);
 
-  // Wired to the video via JSX — survives the mobile/desktop key remount
+  // Wired to the video via JSX — survives the mobile/desktop key remount.
+  // Starts the minimum-watch timer so the user sees the full welcome video.
   const handleVideoReady = useCallback(() => {
     if (videoCountedRef.current) return;
     videoCountedRef.current = true;
+    setTimeout(() => {
+      minElapsedRef.current = true;
+      tryFinish();
+    }, MIN_SHOW_MS);
     bump();
-  }, [bump]);
+  }, [bump, tryFinish]);
 
   useEffect(() => {
     const mobile = window.innerWidth <= 768;
