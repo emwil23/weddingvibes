@@ -15,11 +15,13 @@ export default function LoadingScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const slug = pathname.replace(/^\//, "").split("/")[0];
   const recipient = slug ? formatName(slug) : null;
 
   useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
     document.body.style.overflow = "hidden";
 
     // Kick bar to 92% via CSS transition — reliable across all browsers
@@ -54,6 +56,7 @@ export default function LoadingScreen() {
         >
           {/* Full-screen video */}
           <video
+            key={isMobile ? "mobile" : "desktop"}
             ref={videoRef}
             autoPlay
             muted
@@ -65,8 +68,14 @@ export default function LoadingScreen() {
             }}
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src="/illustrations/envelope_keyed.webm" type="video/webm" />
-            <source src="/illustrations/envelope.mp4" type="video/mp4" />
+            {isMobile ? (
+              <source src="/illustrations/envelope_mobile.mp4" type="video/mp4" />
+            ) : (
+              <>
+                <source src="/illustrations/envelope_keyed.webm" type="video/webm" />
+                <source src="/illustrations/envelope.mp4" type="video/mp4" />
+              </>
+            )}
           </video>
 
           {/* Recipient name on envelope */}

@@ -5,6 +5,7 @@ import { Renderer, Triangle, Program, Mesh, Texture } from "ogl";
 
 interface Props {
   mp4Src: string;
+  mobileSrc?: string; // smaller encode served when viewport <= 768px
   keyColor?: [number, number, number];
   hueTolerance?: number;
   satMin?: number;
@@ -73,6 +74,7 @@ const fragment = `
 
 export default function ChromakeyVideo({
   mp4Src,
+  mobileSrc,
   keyColor = [97, 133, 86],
   hueTolerance = 30,
   satMin = 0.15,
@@ -81,8 +83,12 @@ export default function ChromakeyVideo({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [ready, setReady] = useState(false);
+  const [src, setSrc] = useState(mp4Src);
 
-  useEffect(() => { setReady(true); }, []);
+  useEffect(() => {
+    setSrc(mobileSrc && window.innerWidth <= 768 ? mobileSrc : mp4Src);
+    setReady(true);
+  }, [mp4Src, mobileSrc]);
 
   useEffect(() => {
     if (!ready) return;
@@ -157,7 +163,7 @@ export default function ChromakeyVideo({
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [ready, mp4Src]);
+  }, [ready, src]);
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
@@ -168,7 +174,7 @@ export default function ChromakeyVideo({
         playsInline
         preload="auto"
         crossOrigin="anonymous"
-        src={mp4Src}
+        src={src}
         className="hidden"
       />
     </div>

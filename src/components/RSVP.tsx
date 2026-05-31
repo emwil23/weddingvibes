@@ -116,6 +116,7 @@ export default function RSVP() {
             <div className="mt-10">
               <ChromakeyVideo
                 mp4Src="/illustrations/rsvp.mp4"
+                mobileSrc="/illustrations/rsvp_mobile.mp4"
                 keyColor={[77, 158, 99]}
                 hueTolerance={35}
                 satMin={0.2}

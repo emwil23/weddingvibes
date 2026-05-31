@@ -75,6 +75,7 @@ export default function Timeline() {
           >
             <ChromakeyVideo
               mp4Src="/illustrations/Green_clear_background_202604212207.mp4"
+              mobileSrc="/illustrations/Green_clear_background_202604212207_mobile.mp4"
               keyColor={[97, 133, 86]}
               className="w-full md:w-[130%] h-auto -ml-40 md:ml-0"
             />

@@ -162,6 +162,7 @@ export default function Location() {
           <div className="w-full md:w-2/3 rounded-3xl overflow-hidden">
             <ChromakeyVideo
               mp4Src="/illustrations/save_the_date.mp4"
+              mobileSrc="/illustrations/save_the_date_mobile.mp4"
               keyColor={[94, 159, 109]}
               hueTolerance={40}
               satMin={0.25}
