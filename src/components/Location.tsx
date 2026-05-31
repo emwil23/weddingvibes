@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPin, Plane, Train } from "lucide-react";
 import { VENUE, TRAVEL, ON_THE_DAY, ON_THE_DAY_NOTE } from "@/lib/constants";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 
 function VenueCard({
@@ -46,6 +47,16 @@ function VenueCard({
 }
 
 export default function Location() {
+  const headingRef   = useGsapReveal({ type: "fadeUp" });
+  const venueRef     = useGsapReveal({ stagger: 0.2 });
+  const divider1Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const travelRef    = useGsapReveal({ stagger: 0.15 });
+  const divider2Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const onDayRef     = useGsapReveal({ stagger: 0.12 });
+  const videoRef     = useGsapReveal({ type: "fadeUp", duration: 1.4 });
+  const divider3Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const quoteRef     = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
+
   return (
     <section
       id="details"
@@ -74,7 +85,7 @@ export default function Location() {
       <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
 
         {/* Section heading */}
-        <div className="mb-20 md:mb-28">
+        <div ref={headingRef} className="mb-20 md:mb-28">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
             The details
           </p>
@@ -87,17 +98,17 @@ export default function Location() {
         </div>
 
         {/* Venue cards */}
-        <div className="grid md:grid-cols-2 gap-16 md:gap-24 mb-24 md:mb-32">
+        <div ref={venueRef} className="grid md:grid-cols-2 gap-16 md:gap-24 mb-24 md:mb-32">
           <VenueCard type="Ceremony" venue={VENUE.ceremony} />
           <div className="hidden md:block absolute left-1/2 -translate-x-1/2 h-64 w-px bg-charcoal/8 dark:bg-cream/8" />
           <VenueCard type="Reception" venue={VENUE.reception} />
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
+        <div ref={divider1Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
 
         {/* Travel */}
-        <div className="mb-20 md:mb-28">
+        <div ref={travelRef} className="mb-20 md:mb-28">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12">
             Getting there
           </p>
@@ -123,10 +134,10 @@ export default function Location() {
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
+        <div ref={divider2Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
 
         {/* On The Day */}
-        <div>
+        <div ref={onDayRef}>
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12">
             On the day
           </p>
@@ -158,7 +169,7 @@ export default function Location() {
         </div>
 
         {/* Save the date animation */}
-        <div className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none">
+        <div ref={videoRef} className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none">
           <div className="w-full md:w-2/3 rounded-3xl overflow-hidden">
             <ChromakeyVideo
               mp4Src="/illustrations/save_the_date.mp4"
@@ -172,10 +183,11 @@ export default function Location() {
         </div>
 
         {/* Closing divider */}
-        <div className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mt-20 md:mt-24 mb-16 md:mb-20" />
+        <div ref={divider3Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mt-20 md:mt-24 mb-16 md:mb-20" />
 
         {/* Closing quote */}
         <p
+          ref={quoteRef}
           className="font-display text-charcoal/25 dark:text-cream/20 text-center"
           style={{ fontSize: "clamp(2rem, 4.5vw, 1rem)", letterSpacing: "-0.01em" }}
         >

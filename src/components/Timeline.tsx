@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import { NOTE_POEM } from "@/lib/constants";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 
 export default function Timeline() {
+  const headingRef  = useGsapReveal({ type: "fadeUp" });
+  const poemRef     = useGsapReveal({ stagger: 0.1 });
+  const dividerRef  = useGsapReveal({ type: "scaleX", duration: 1.4 });
+  const videoRef    = useGsapReveal<HTMLDivElement>({ type: "slideLeft", delay: 0.4, duration: 1.6 });
 
   return (
     <section
@@ -36,7 +41,7 @@ export default function Timeline() {
 
           {/* Left — poem content */}
           <div className="relative z-10">
-            <div className="mb-16 md:mb-20">
+            <div ref={headingRef} className="mb-16 md:mb-20">
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
                 A note
               </p>
@@ -48,7 +53,7 @@ export default function Timeline() {
               </h2>
             </div>
 
-            <div className="flex flex-col">
+            <div ref={poemRef} className="flex flex-col">
               {NOTE_POEM.map((line, i) =>
                 line === "" ? (
                   <div key={i} className="h-6" />
@@ -65,12 +70,14 @@ export default function Timeline() {
             </div>
 
             <div
+              ref={dividerRef}
               className="w-16 h-px bg-charcoal/20 dark:bg-cream/20 mt-16"
             />
           </div>
 
           {/* Right — walking animation */}
           <div
+            ref={videoRef}
             className="flex items-center justify-center pointer-events-none select-none"
           >
             <ChromakeyVideo

@@ -2,8 +2,14 @@
 
 import Image from "next/image";
 import { BLEND_POEM } from "@/lib/constants";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 
 export default function Gallery() {
+  const headingRef  = useGsapReveal({ type: "fadeUp" });
+  const titleRef    = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
+  const poemRef     = useGsapReveal({ stagger: 0.1 });
+  const dividerRef  = useGsapReveal({ type: "scaleX", duration: 1.4 });
+  const closingRef  = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
 
   return (
     <section
@@ -31,7 +37,7 @@ export default function Gallery() {
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto px-8 md:px-20 lg:px-32">
-        <div className="mb-16 md:mb-20">
+        <div ref={headingRef} className="mb-16 md:mb-20">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/40 dark:text-charcoal/40 mb-4">
             The Blend
           </p>
@@ -44,12 +50,13 @@ export default function Gallery() {
         </div>
 
         <p
+          ref={titleRef}
           className="font-body text-[10px] tracking-[0.25em] uppercase text-cream/35 dark:text-charcoal/35 mb-10"
         >
           {BLEND_POEM.title}
         </p>
 
-        <div className="flex flex-col">
+        <div ref={poemRef} className="flex flex-col">
           {BLEND_POEM.lines.map((line, i) =>
             line === "" ? (
               <div key={i} className="h-6" />
@@ -66,10 +73,12 @@ export default function Gallery() {
         </div>
 
         <div
+          ref={dividerRef}
           className="w-16 h-px bg-cream/20 dark:bg-charcoal/20 mt-16 mb-8"
         />
 
         <p
+          ref={closingRef}
           className="font-display text-cream/50 dark:text-charcoal/40"
           style={{ fontSize: "clamp(1.2rem, 2.5vw, 1.8rem)", letterSpacing: "-0.01em" }}
         >
