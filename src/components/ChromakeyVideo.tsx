@@ -167,15 +167,26 @@ export default function ChromakeyVideo({
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
+      {/* Source video kept rendered (mobile refuses to decode display:none video)
+          but visually hidden behind the canvas */}
       <video
         ref={videoRef}
         loop
         muted
         playsInline
+        autoPlay
         preload="auto"
         crossOrigin="anonymous"
         src={src}
-        className="hidden"
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          opacity: 0.01,
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
       />
     </div>
   );
