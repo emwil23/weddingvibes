@@ -1,18 +1,16 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { COUPLE, WEDDING } from "@/lib/constants";
-import { fadeUp, VIEWPORT } from "@/hooks/useScrollAnimation";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 
 export default function Footer() {
+  const ref = useGsapReveal({ type: "fadeUp" });
+
   return (
     <footer className="relative py-20 md:py-28 bg-charcoal dark:bg-cream overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
+        <div
+          ref={ref}
           className="flex flex-col items-center text-center gap-6"
         >
           {/* Monogram */}
@@ -32,7 +30,7 @@ export default function Footer() {
           <p className="font-body text-[9px] tracking-[0.2em] uppercase text-cream/20 dark:text-charcoal/20 mt-8">
             Made with love
           </p>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );

@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { MapPin, Plane, Train } from "lucide-react";
 import { VENUE, TRAVEL, ON_THE_DAY, ON_THE_DAY_NOTE } from "@/lib/constants";
-import { staggerContainer, staggerItem, fadeUp, VIEWPORT } from "@/hooks/useScrollAnimation";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 
 function VenueCard({
@@ -15,7 +14,7 @@ function VenueCard({
   venue: { name: string; address: string; city: string; time: string; description: string };
 }) {
   return (
-    <motion.div variants={fadeUp} className="flex flex-col">
+    <div className="flex flex-col">
       <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-6">
         {type}
       </p>
@@ -43,17 +42,27 @@ function VenueCard({
         <MapPin size={10} />
         View on map
       </a>
-    </motion.div>
+    </div>
   );
 }
 
 export default function Location() {
+  const headingRef   = useGsapReveal({ type: "fadeUp" });
+  const venueRef     = useGsapReveal({ stagger: 0.2 });
+  const divider1Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const travelRef    = useGsapReveal({ stagger: 0.15 });
+  const divider2Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const onDayRef     = useGsapReveal({ stagger: 0.12 });
+  const videoRef     = useGsapReveal({ type: "fadeUp", duration: 1.4 });
+  const divider3Ref  = useGsapReveal({ type: "scaleX", duration: 1.2 });
+  const quoteRef     = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
+
   return (
     <section
       id="details"
       className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
-      {/* Mountain background — blended into section */}
+      {/* Mountain background */}
       <div
         className="absolute inset-0 z-0 pointer-events-none select-none"
         style={{
@@ -76,13 +85,7 @@ export default function Location() {
       <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
 
         {/* Section heading */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="mb-20 md:mb-28"
-        >
+        <div ref={headingRef} className="mb-20 md:mb-28">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
             The details
           </p>
@@ -92,48 +95,26 @@ export default function Location() {
           >
             Where &amp; When
           </h2>
-        </motion.div>
+        </div>
 
         {/* Venue cards */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="grid md:grid-cols-2 gap-16 md:gap-24 mb-24 md:mb-32"
-        >
+        <div ref={venueRef} className="grid md:grid-cols-2 gap-16 md:gap-24 mb-24 md:mb-32">
           <VenueCard type="Ceremony" venue={VENUE.ceremony} />
           <div className="hidden md:block absolute left-1/2 -translate-x-1/2 h-64 w-px bg-charcoal/8 dark:bg-cream/8" />
           <VenueCard type="Reception" venue={VENUE.reception} />
-        </motion.div>
+        </div>
 
         {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          style={{ transformOrigin: "left center" }}
-          className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24"
-        />
+        <div ref={divider1Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
 
         {/* Travel */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="mb-20 md:mb-28"
-        >
-          <motion.p
-            variants={staggerItem}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12"
-          >
+        <div ref={travelRef} className="mb-20 md:mb-28">
+          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12">
             Getting there
-          </motion.p>
+          </p>
           <div className="flex flex-col gap-8">
             {TRAVEL.map((item) => (
-              <motion.div key={item.label} variants={staggerItem}>
+              <div key={item.label}>
                 <div className="flex items-center gap-3 mb-3 text-charcoal/40 dark:text-cream/35">
                   {item.icon === "train" ? <Train size={14} strokeWidth={1.5} /> : <Plane size={14} strokeWidth={1.5} />}
                   <span className="font-body text-[10px] tracking-[0.2em] uppercase">{item.label}</span>
@@ -147,38 +128,22 @@ export default function Location() {
                 <p className="font-body text-sm text-charcoal/45 dark:text-cream/40 max-w-sm leading-relaxed">
                   {item.detail}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
-
-        </motion.div>
+        </div>
 
         {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          style={{ transformOrigin: "left center" }}
-          className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24"
-        />
+        <div ref={divider2Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mb-20 md:mb-24" />
 
         {/* On The Day */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-        >
-          <motion.p
-            variants={staggerItem}
-            className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12"
-          >
+        <div ref={onDayRef}>
+          <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-12">
             On the day
-          </motion.p>
+          </p>
           <div className="flex flex-col gap-4 mb-10">
             {ON_THE_DAY.map((item) => (
-              <motion.div key={item.time} variants={staggerItem} className="flex items-baseline gap-6">
+              <div key={item.time} className="flex items-baseline gap-6">
                 <span className="font-body text-sm text-charcoal/40 dark:text-cream/35 w-20 shrink-0">
                   {item.time}
                 </span>
@@ -188,30 +153,23 @@ export default function Location() {
                 >
                   {item.event}
                 </span>
-              </motion.div>
+              </div>
             ))}
           </div>
           <div className="flex flex-col gap-5 mt-2">
             {ON_THE_DAY_NOTE.map((para, i) => (
-              <motion.p
+              <p
                 key={i}
-                variants={staggerItem}
                 className="font-body text-sm text-charcoal/50 dark:text-cream/40 leading-loose max-w-sm whitespace-pre-line"
               >
                 {para}
-              </motion.p>
+              </p>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Save the date animation */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none"
-        >
+        <div ref={videoRef} className="flex items-center justify-center mt-16 md:mt-24 pointer-events-none select-none">
           <div className="w-full md:w-2/3 rounded-3xl overflow-hidden">
             <ChromakeyVideo
               mp4Src="/illustrations/save_the_date.mp4"
@@ -221,29 +179,21 @@ export default function Location() {
               className="w-full h-auto"
             />
           </div>
-        </motion.div>
+        </div>
+
+        {/* Closing divider */}
+        <div ref={divider3Ref} className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mt-20 md:mt-24 mb-16 md:mb-20" />
 
         {/* Closing quote */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          style={{ transformOrigin: "left center" }}
-          className="w-full h-px bg-charcoal/10 dark:bg-cream/10 mt-20 md:mt-24 mb-16 md:mb-20"
-        />
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
+        <p
+          ref={quoteRef}
           className="font-display text-charcoal/25 dark:text-cream/20 text-center"
           style={{ fontSize: "clamp(2rem, 4.5vw, 1rem)", letterSpacing: "-0.01em" }}
         >
           In the land of rivers and tea, our story finds its moment.
-        </motion.p>
+        </p>
 
-        </div>
+      </div>
     </section>
   );
 }

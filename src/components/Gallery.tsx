@@ -1,19 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { BLEND_POEM } from "@/lib/constants";
-import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
-
-const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 
 export default function Gallery() {
+  const headingRef  = useGsapReveal({ type: "fadeUp" });
+  const titleRef    = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
+  const poemRef     = useGsapReveal({ stagger: 0.1 });
+  const dividerRef  = useGsapReveal({ type: "scaleX", duration: 1.4 });
+  const closingRef  = useGsapReveal<HTMLParagraphElement>({ type: "fadeUp" });
+
   return (
     <section
       id="gallery"
       className="relative py-32 md:py-48 bg-charcoal dark:bg-cream overflow-hidden"
     >
-      {/* Mountain panorama background — blended into section */}
+      {/* Mountain panorama background */}
       <div
         className="absolute inset-0 z-0 pointer-events-none select-none"
         style={{
@@ -34,13 +37,7 @@ export default function Gallery() {
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto px-8 md:px-20 lg:px-32">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="mb-16 md:mb-20"
-        >
+        <div ref={headingRef} className="mb-16 md:mb-20">
           <p className="font-body text-[10px] tracking-[0.3em] uppercase text-cream/40 dark:text-charcoal/40 mb-4">
             The Blend
           </p>
@@ -50,67 +47,44 @@ export default function Gallery() {
           >
             The Blend
           </h2>
-        </motion.div>
+        </div>
 
-        {/* Poem title */}
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
+        <p
+          ref={titleRef}
           className="font-body text-[10px] tracking-[0.25em] uppercase text-cream/35 dark:text-charcoal/35 mb-10"
         >
           {BLEND_POEM.title}
-        </motion.p>
+        </p>
 
-        {/* Poem lines */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
-          className="flex flex-col"
-        >
+        <div ref={poemRef} className="flex flex-col">
           {BLEND_POEM.lines.map((line, i) =>
             line === "" ? (
-              <motion.div key={i} variants={staggerItem} className="h-6" />
+              <div key={i} className="h-6" />
             ) : (
-              <motion.p
+              <p
                 key={i}
-                variants={staggerItem}
                 className="font-body text-cream/70 dark:text-charcoal/60 leading-relaxed"
                 style={{ fontSize: "clamp(1rem, 1.8vw, 1.25rem)" }}
               >
                 {line}
-              </motion.p>
+              </p>
             )
           )}
-        </motion.div>
+        </div>
 
-        {/* Divider */}
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          whileInView={{ scaleX: 1, opacity: 1 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 1.4, ease: EXPO }}
-          style={{ transformOrigin: "left center" }}
+        <div
+          ref={dividerRef}
           className="w-16 h-px bg-cream/20 dark:bg-charcoal/20 mt-16 mb-8"
         />
 
-        {/* Closing line */}
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT}
+        <p
+          ref={closingRef}
           className="font-display text-cream/50 dark:text-charcoal/40"
           style={{ fontSize: "clamp(1.2rem, 2.5vw, 1.8rem)", letterSpacing: "-0.01em" }}
         >
           {BLEND_POEM.closing}
-        </motion.p>
-
-
-        </div>
+        </p>
+      </div>
     </section>
   );
 }

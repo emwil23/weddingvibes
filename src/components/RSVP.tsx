@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
-import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 import { COUPLE, WEDDING } from "@/lib/constants";
 
 type Attendance = "yes" | "no" | null;
@@ -28,6 +28,8 @@ export default function RSVP() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const leftRef = useGsapReveal({ stagger: 0.12 });
+  const formRef = useGsapReveal({ type: "fadeUp" });
 
   function validate(): Errors {
     const e: Errors = {};
@@ -91,20 +93,11 @@ export default function RSVP() {
         <div className="grid lg:grid-cols-2 gap-20 lg:gap-32 items-start">
 
           {/* Left: text block */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={VIEWPORT}
-          >
-            <motion.p
-              variants={staggerItem}
-              className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4"
-            >
+          <div ref={leftRef}>
+            <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
               Kindly respond by July 1, 2026
-            </motion.p>
-            <motion.h2
-              variants={staggerItem}
+            </p>
+            <h2
               className="font-display text-charcoal dark:text-cream mb-8"
               style={{
                 fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
@@ -115,21 +108,15 @@ export default function RSVP() {
               Will you
               <br />
               join us?
-            </motion.h2>
-            <motion.p
-              variants={staggerItem}
-              className="font-body text-sm text-charcoal/55 dark:text-cream/45 leading-relaxed max-w-sm"
-            >
+            </h2>
+            <p className="font-body text-sm text-charcoal/55 dark:text-cream/45 leading-relaxed max-w-sm">
               We would be honoured to celebrate with you in Guwahati.
               <br />
               Please let us know if you can make it.
-            </motion.p>
+            </p>
 
             {/* Couple video */}
-            <motion.div
-              variants={staggerItem}
-              className="mt-10"
-            >
+            <div className="mt-10">
               <ChromakeyVideo
                 mp4Src="/illustrations/rsvp.mp4"
                 keyColor={[77, 158, 99]}
@@ -137,27 +124,21 @@ export default function RSVP() {
                 satMin={0.2}
                 className="w-full h-auto"
               />
-            </motion.div>
+            </div>
 
             {/* Decorative date */}
-            <motion.div
-              variants={staggerItem}
-              className="mt-8 pt-8 border-t border-charcoal/10 dark:border-cream/10"
-            >
+            <div className="mt-8 pt-8 border-t border-charcoal/10 dark:border-cream/10">
               <p className="font-body text-charcoal/20 dark:text-cream/15"
                 style={{ fontSize: "clamp(1rem, 3vw, 2rem)", letterSpacing: "-0.01em" }}
               >
                 {WEDDING.date}
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Right: form */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={VIEWPORT}
+          <div
+            ref={formRef}
             className="relative z-10 backdrop-blur-md bg-cream/70 dark:bg-charcoal/70 p-8 md:p-12 rounded-3xl  dark:border-cream/10"
           >
             <AnimatePresence mode="wait">
@@ -340,7 +321,7 @@ export default function RSVP() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

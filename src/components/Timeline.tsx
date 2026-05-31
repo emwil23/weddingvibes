@@ -1,20 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { NOTE_POEM } from "@/lib/constants";
-import { fadeUp, staggerContainer, staggerItem, VIEWPORT } from "@/hooks/useScrollAnimation";
+import { useGsapReveal } from "@/hooks/useGsapReveal";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 
-const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
 export default function Timeline() {
+  const headingRef  = useGsapReveal({ type: "fadeUp" });
+  const poemRef     = useGsapReveal({ stagger: 0.1 });
+  const dividerRef  = useGsapReveal({ type: "scaleX", duration: 1.4 });
+  const videoRef    = useGsapReveal<HTMLDivElement>({ type: "slideLeft", delay: 0.4, duration: 1.6 });
+
   return (
     <section
       id="story"
       className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
     >
-      {/* Mountain background — blended into section */}
+      {/* Mountain background */}
       <div
         className="absolute inset-0 z-0 pointer-events-none select-none"
         style={{
@@ -39,13 +41,7 @@ export default function Timeline() {
 
           {/* Left — poem content */}
           <div className="relative z-10">
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={VIEWPORT}
-              className="mb-16 md:mb-20"
-            >
+            <div ref={headingRef} className="mb-16 md:mb-20">
               <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
                 A note
               </p>
@@ -55,47 +51,33 @@ export default function Timeline() {
               >
                 A Note
               </h2>
-            </motion.div>
+            </div>
 
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={VIEWPORT}
-              className="flex flex-col"
-            >
+            <div ref={poemRef} className="flex flex-col">
               {NOTE_POEM.map((line, i) =>
                 line === "" ? (
-                  <motion.div key={i} variants={staggerItem} className="h-6" />
+                  <div key={i} className="h-6" />
                 ) : (
-                  <motion.p
+                  <p
                     key={i}
-                    variants={staggerItem}
                     className="font-body text-charcoal/70 dark:text-cream/60 leading-relaxed"
                     style={{ fontSize: "clamp(1rem, 1.8vw, 1.25rem)" }}
                   >
                     {line}
-                  </motion.p>
+                  </p>
                 )
               )}
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ scaleX: 0, opacity: 0 }}
-              whileInView={{ scaleX: 1, opacity: 1 }}
-              viewport={VIEWPORT}
-              transition={{ duration: 1.4, ease: EXPO }}
-              style={{ transformOrigin: "left center" }}
+            <div
+              ref={dividerRef}
               className="w-16 h-px bg-charcoal/20 dark:bg-cream/20 mt-16"
             />
           </div>
 
           {/* Right — walking animation */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={VIEWPORT}
-            transition={{ duration: 1.6, ease: EXPO, delay: 0.4 }}
+          <div
+            ref={videoRef}
             className="flex items-center justify-center pointer-events-none select-none"
           >
             <ChromakeyVideo
@@ -103,10 +85,10 @@ export default function Timeline() {
               keyColor={[97, 133, 86]}
               className="w-full md:w-[130%] h-auto -ml-40 md:ml-0"
             />
-          </motion.div>
+          </div>
 
         </div>
-        </div>
+      </div>
     </section>
   );
 }
