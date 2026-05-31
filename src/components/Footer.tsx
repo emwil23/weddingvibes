@@ -1,16 +1,12 @@
 "use client";
 
 import { COUPLE, WEDDING } from "@/lib/constants";
-import { useGsapReveal } from "@/hooks/useGsapReveal";
 
 export default function Footer() {
-  const ref = useGsapReveal({ type: "fadeUp" });
-
   return (
     <footer className="relative py-20 md:py-28 bg-charcoal dark:bg-cream overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
         <div
-          ref={ref}
           className="flex flex-col items-center text-center gap-6"
         >
           {/* Monogram */}

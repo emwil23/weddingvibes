@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
-import { useGsapReveal } from "@/hooks/useGsapReveal";
 import { COUPLE, WEDDING } from "@/lib/constants";
 
 type Attendance = "yes" | "no" | null;
@@ -28,8 +27,6 @@ export default function RSVP() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const leftRef = useGsapReveal({ stagger: 0.12 });
-  const formRef = useGsapReveal({ type: "fadeUp" });
 
   function validate(): Errors {
     const e: Errors = {};
@@ -93,7 +90,7 @@ export default function RSVP() {
         <div className="grid lg:grid-cols-2 gap-20 lg:gap-32 items-start">
 
           {/* Left: text block */}
-          <div ref={leftRef}>
+          <div>
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
               Kindly respond by July 1, 2026
             </p>
@@ -138,7 +135,6 @@ export default function RSVP() {
 
           {/* Right: form */}
           <div
-            ref={formRef}
             className="relative z-10 backdrop-blur-md bg-cream/70 dark:bg-charcoal/70 p-8 md:p-12 rounded-3xl  dark:border-cream/10"
           >
             <AnimatePresence mode="wait">
