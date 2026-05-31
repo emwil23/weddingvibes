@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,6 +11,24 @@ function formatName(raw: string): string {
     .trim();
 }
 
+// Critical assets to preload before reveal (excludes the welcome video — tracked separately)
+const DESKTOP_ASSETS = [
+  "/illustrations/Bouquet_animated_black_202604261838.mp4",
+  "/illustrations/Green_clear_background_202604212207.mp4",
+  "/illustrations/save_the_date.mp4",
+  "/illustrations/rsvp.mp4",
+  "/illustrations/ghibli_couple.jpeg",
+];
+const MOBILE_ASSETS = [
+  "/illustrations/bouquet_480.mp4",
+  "/illustrations/Green_clear_background_202604212207_mobile.mp4",
+  "/illustrations/save_the_date_mobile.mp4",
+  "/illustrations/rsvp_mobile.mp4",
+  "/illustrations/ghibli_couple.jpeg",
+];
+
+const MAX_WAIT_MS = 12000; // hard fallback — never stuck even if a fetch hangs
+
 export default function LoadingScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
@@ -20,28 +38,63 @@ export default function LoadingScreen() {
   const slug = pathname.replace(/^\//, "").split("/")[0];
   const recipient = slug ? formatName(slug) : null;
 
+  // Mutable load-tracking state (survives re-renders / video remount)
+  const loadedRef = useRef(0);
+  const totalRef = useRef(1);
+  const finishedRef = useRef(false);
+  const videoCountedRef = useRef(false);
+
+  const finish = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setProgress(100);
+    setTimeout(() => {
+      setDone(true);
+      document.body.style.overflow = "";
+    }, 500);
+  }, []);
+
+  const bump = useCallback(() => {
+    loadedRef.current += 1;
+    setProgress(Math.min(99, Math.round((loadedRef.current / totalRef.current) * 100)));
+    if (loadedRef.current >= totalRef.current) finish();
+  }, [finish]);
+
+  // Wired to the video via JSX — survives the mobile/desktop key remount
+  const handleVideoReady = useCallback(() => {
+    if (videoCountedRef.current) return;
+    videoCountedRef.current = true;
+    bump();
+  }, [bump]);
+
   useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
     document.body.style.overflow = "hidden";
 
-    // Kick bar to 92% via CSS transition — reliable across all browsers
-    const t1 = setTimeout(() => setProgress(92), 50);
+    const assets = mobile ? MOBILE_ASSETS : DESKTOP_ASSETS;
+    totalRef.current = assets.length + 1; // +1 = welcome video ready
 
-    // Dismiss after 5s fixed — don't block on window.onload (videos are too large over network)
-    const t2 = setTimeout(() => {
-      setProgress(100);
-      setTimeout(() => {
-        setDone(true);
-        document.body.style.overflow = "";
-      }, 600);
-    }, 5000);
+    // Preload section assets — consume full body (.blob) so the whole file lands
+    // in cache, not just response headers. Guarantees videos are fully downloaded.
+    assets.forEach((url) => {
+      fetch(url, { cache: "force-cache" })
+        .then((r) => r.blob())
+        .then(bump)
+        .catch(bump);
+    });
+
+    // Video may already be ready before listener attaches
+    if (videoRef.current && videoRef.current.readyState >= 3) handleVideoReady();
+
+    // Hard fallback — never stuck even if a fetch or the video hangs
+    const maxTimer = setTimeout(finish, MAX_WAIT_MS);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      clearTimeout(maxTimer);
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [bump, finish, handleVideoReady]);
 
   return (
     <AnimatePresence onExitComplete={() => window.dispatchEvent(new Event("site-ready"))}>
@@ -66,6 +119,8 @@ export default function LoadingScreen() {
             onCanPlay={() => {
               if (videoRef.current) videoRef.current.playbackRate = 0.75;
             }}
+            onCanPlayThrough={handleVideoReady}
+            onError={handleVideoReady}
             className="absolute inset-0 w-full h-full object-cover"
           >
             {isMobile ? (
@@ -127,7 +182,7 @@ export default function LoadingScreen() {
                   background: "linear-gradient(to right, #D4A5A0, #B87C77)",
                   boxShadow: "0 0 8px rgba(212, 165, 160, 0.6)",
                   width: `${progress}%`,
-                  transition: progress === 0 ? "none" : progress < 100 ? "width 4.8s cubic-bezier(0.16, 1, 0.3, 1)" : "width 0.3s ease-out",
+                  transition: "width 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
               />
             </div>
