@@ -24,9 +24,6 @@ function getRateLimit(ip: string): { allowed: boolean; remaining: number } {
   return { allowed: true, remaining: LIMIT - entry.count };
 }
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 export async function POST(req: NextRequest) {
   const ip =
@@ -60,9 +57,6 @@ export async function POST(req: NextRequest) {
   if (!name?.trim()) {
     return NextResponse.json({ error: "Name is required." }, { status: 400 });
   }
-  if (!email?.trim() || !isValidEmail(email)) {
-    return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
-  }
   if (attendance !== "yes" && attendance !== "no") {
     return NextResponse.json({ error: "Please select attendance." }, { status: 400 });
   }
@@ -76,7 +70,7 @@ export async function POST(req: NextRequest) {
     await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ name, email, attendance, message: message ?? "" }).toString(),
+      body: new URLSearchParams({ name, email: email ?? "", attendance, message: message ?? "" }).toString(),
     });
   } catch {
     return NextResponse.json({ error: "Failed to save RSVP. Please try again." }, { status: 502 });

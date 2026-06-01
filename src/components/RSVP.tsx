@@ -10,18 +10,13 @@ type Attendance = "yes" | "no" | null;
 
 interface Errors {
   name?: string;
-  email?: string;
   attendance?: string;
   form?: string;
 }
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 export default function RSVP() {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [attendance, setAttendance] = useState<Attendance>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -34,8 +29,6 @@ export default function RSVP() {
   function validate(): Errors {
     const e: Errors = {};
     if (!name.trim()) e.name = "Name is required.";
-    if (!email.trim()) e.email = "Email is required.";
-    else if (!isValidEmail(email)) e.email = "Please enter a valid email.";
     if (!attendance) e.attendance = "Please let us know if you can attend.";
     return e;
   }
@@ -48,7 +41,7 @@ export default function RSVP() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const allTouched = { name: true, email: true, attendance: true };
+    const allTouched = { name: true, attendance: true };
     setTouched(allTouched);
 
     const errs = validate();
@@ -64,7 +57,7 @@ export default function RSVP() {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, attendance, message, _hp: "" }),
+        body: JSON.stringify({ name, attendance, message, _hp: "" }),
       });
 
       const data = await res.json();
@@ -170,29 +163,6 @@ export default function RSVP() {
                       className={`input-minimal ${touched.name && errors.name ? "border-red-400 dark:border-red-400" : ""}`}
                     />
                     <FieldError show={!!(touched.name && errors.name)} message={errors.name} />
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label className="block font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 dark:text-cream/35 mb-2">
-                      Email <span className="text-charcoal/30 dark:text-cream/25">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (touched.email) {
-                          const v = e.target.value;
-                          setErrors((err) => ({ ...err, email: !v.trim() ? "Email is required." : !isValidEmail(v) ? "Please enter a valid email." : undefined }));
-                        }
-                      }}
-                      onBlur={() => onBlur("email")}
-                      placeholder="your@email.com"
-                      className={`input-minimal ${touched.email && errors.email ? "border-red-400 dark:border-red-400" : ""}`}
-                    />
-                    <FieldError show={!!(touched.email && errors.email)} message={errors.email} />
                   </div>
 
                   {/* Attendance */}
