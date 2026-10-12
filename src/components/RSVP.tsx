@@ -54,18 +54,15 @@ export default function RSVP() {
     setErrors({});
 
     try {
-      const res = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, attendance, message, _hp: "" }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrors({ form: data.error ?? "Something went wrong. Please try again." });
-        setLoading(false);
-        return;
+      // Honeypot — bots fill hidden fields, humans don't; silently drop
+      const hp = new FormData(e.currentTarget as HTMLFormElement).get("_hp");
+      if (!hp && process.env.NEXT_PUBLIC_SCRIPT_URL) {
+        // shortcut: no-cors hides the Apps Script response, so only network failures surface; upgrade if the script must return errors
+        await fetch(process.env.NEXT_PUBLIC_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: new URLSearchParams({ name, email: "", attendance: attendance!, message }),
+        });
       }
     } catch {
       setErrors({ form: "Network error. Please check your connection and try again." });

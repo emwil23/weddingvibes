@@ -36,8 +36,12 @@ export default function LoadingScreen() {
   const [done, setDone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
-  const slug = pathname.replace(/^\//, "").split("/")[0];
-  const recipient = slug ? formatName(slug) : null;
+  // Set after mount: on the static 404.html fallback the prerendered pathname isn't the guest's URL
+  const [recipient, setRecipient] = useState<string | null>(null);
+  useEffect(() => {
+    const slug = pathname.replace(/^\//, "").split("/")[0];
+    setRecipient(slug ? formatName(slug) : null);
+  }, [pathname]);
 
   // Mutable load-tracking state (survives re-renders / video remount)
   const loadedRef = useRef(0);
