@@ -126,10 +126,21 @@ export default function ChromakeyVideo({
     const geometry = new Triangle(gl);
     const mesh = new Mesh(gl, { geometry, program });
 
+    // Resizing a canvas clears it, and phones fire resize whenever the address bar moves:
+    // skip no-ops, and after a real one redraw even if the film is paused
+    let cw = 0;
+    let ch = 0;
+    let dirty = false;
     function size() {
       const w = video!.videoWidth || 1280;
       const h = video!.videoHeight || 720;
-      renderer.setSize(container!.offsetWidth, container!.offsetWidth * (h / w));
+      const nw = container!.offsetWidth;
+      const nh = Math.round(nw * (h / w));
+      if (nw === cw && nh === ch) return;
+      cw = nw;
+      ch = nh;
+      renderer.setSize(nw, nh);
+      dirty = true;
     }
 
     let rafId = 0;
@@ -139,9 +150,13 @@ export default function ChromakeyVideo({
     function loop(t: number) {
       if (!visible) return; // restarted by the observer
       rafId = requestAnimationFrame(loop);
-      if (video!.paused || video!.ended || video!.readyState < 2) return;
-      // ~24fps throttle
-      if (t - lastTime < 40) return;
+      if (video!.readyState < 2) return;
+      if (!dirty) {
+        if (video!.paused || video!.ended) return;
+        // ~24fps throttle
+        if (t - lastTime < 40) return;
+      }
+      dirty = false;
       lastTime = t;
 
       texture.image = video as unknown as HTMLImageElement;
@@ -155,7 +170,12 @@ export default function ChromakeyVideo({
       if (!visible) return;
       video!.play().catch(() => {});
       window.clearTimeout(idle);
-      idle = window.setTimeout(() => video!.pause(), 170);
+      idle = window.setTimeout(rest, 170);
+    }
+    // iOS can take longer than that to start a film; never pause before there is a frame to hold
+    function rest() {
+      if (visible && (video!.readyState < 2 || video!.currentTime === 0)) idle = window.setTimeout(rest, 120);
+      else video!.pause();
     }
 
     function onLoaded() {

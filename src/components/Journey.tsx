@@ -25,6 +25,8 @@ import { reducedMotion } from "@/components/Motion";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
+  // Phones resize the window whenever the address bar slides away; re-measuring then would make the world jump
+  ScrollTrigger.config({ ignoreMobileResize: true });
 }
 
 // ─── The journey ─────────────────────────────────────────────────────────────
@@ -166,7 +168,7 @@ export default function Journey() {
     function measure() {
       journey.hold = window.innerHeight * DIVE_SCREENS;
       journey.holdAt = worldLeft(one("[data-confluence]"));
-      root!.style.height = `${distance() + journey.hold + window.innerHeight}px`;
+      root!.style.height = `${distance() + journey.hold + stage.offsetHeight}px`;
       far.style.width = `${window.innerWidth + distance() * FAR_SPEED}px`;
       journey.sourceX = worldLeft(one("[data-source]"));
       journey.confluenceX = journey.holdAt + window.innerWidth * 0.5;
@@ -191,8 +193,10 @@ export default function Journey() {
 
         // The sun rises over the source, peaks, and sets into the river at journey's end
         // It stays above the words all day and only drops once the last scene is reached
-        const sx = 50 + 39 * p;
-        const sy = 14 - 3 * Math.sin(Math.PI * p) + 45 * smoothstep(0.9, 1, p);
+        // On a phone it keeps to the right, clear of the words and the top bar
+        const narrow = window.innerWidth < 768;
+        const sx = narrow ? 76 + 12 * p : 50 + 39 * p;
+        const sy = (narrow ? 19 : 14) - 3 * Math.sin(Math.PI * p) + 45 * smoothstep(0.9, 1, p);
         sun.style.transform = `translate3d(${sx}vw, ${sy}svh, 0)`;
         sun.style.setProperty("--sun", `rgb(${243 - 10 * p | 0} ${216 - 96 * p * p | 0} ${150 - 70 * p | 0})`);
 
@@ -361,7 +365,7 @@ export default function Journey() {
     <section id="journey" ref={rootRef} className="relative h-[1000vh] motion-reduce:h-auto">
       <div
         data-stage
-        className="sticky top-0 h-dvh overflow-hidden bg-paper text-ink motion-reduce:static motion-reduce:h-auto"
+        className="sticky top-0 h-lvh overflow-hidden bg-paper text-ink motion-reduce:static motion-reduce:h-auto"
       >
         {/* Sun — a wet-on-wet disc that crosses the sky with the reader */}
         <div
@@ -455,7 +459,8 @@ export default function Journey() {
           <div data-bank aria-hidden="true" className="bank absolute inset-x-0 bottom-[30%] h-10 motion-reduce:hidden" />
 
           {/* ── I. The source ── */}
-          <div id="hero" data-panel data-hero className="relative h-full w-screen shrink-0 px-[7vw] pt-[15svh] pb-[45svh]">
+          {/* max-height variants: a phone held sideways has very little height, so drop what does not fit */}
+          <div id="hero" data-panel data-hero className="relative h-full w-screen shrink-0 px-[7vw] pt-[15svh] pb-[45svh] [@media(max-height:480px)]:pl-[13vw]">
             <div className="flex h-full max-w-[52rem] flex-col justify-center">
               <p data-fade className="eyebrow text-ink/60">
                 {guest ? `Dear ${guest} — t` : "T"}ogether with their families
@@ -470,7 +475,7 @@ export default function Journey() {
                   <em data-name className="block">{COUPLE.partner1}</em>
                 </span>
               </h1>
-              <div data-fade className="mt-[3svh] font-serif text-[clamp(1.1rem,2.7svh,1.6rem)] italic leading-snug text-ink/70">
+              <div data-fade className="mt-[3svh] font-serif text-[clamp(1.1rem,2.7svh,1.6rem)] italic leading-snug text-ink/70 [@media(max-height:480px)]:hidden">
                 {HERO_TAGLINE.map((line) => (
                   <p key={line}>{line}</p>
                 ))}

@@ -165,11 +165,15 @@ export default function River({ className = "" }: { className?: string }) {
     const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
     let h = 1;
+    let w = 0;
     function resize() {
+      // Phones fire resize as the address bar moves; resizing a canvas clears it, so skip no-ops
+      if (wrap!.offsetWidth === w && wrap!.offsetHeight === h) return;
+      w = wrap!.offsetWidth;
       h = wrap!.offsetHeight || 1;
-      renderer.setSize(wrap!.offsetWidth, h);
+      renderer.setSize(w, h);
       Object.assign(gl.canvas.style, { width: "100%", height: "100%", display: "block" });
-      program.uniforms.uAspect.value = wrap!.offsetWidth / h;
+      program.uniforms.uAspect.value = w / h;
     }
     resize();
     window.addEventListener("resize", resize);

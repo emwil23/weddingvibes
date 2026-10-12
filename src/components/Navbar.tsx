@@ -64,7 +64,7 @@ export default function Navbar() {
         </button>
 
         {/* Chapter marker: the numeral and title change as the river carries you on */}
-        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 overflow-hidden" aria-live="polite">
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 overflow-hidden [@media(max-height:480px)]:hidden" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>
             <motion.p
               key={active}

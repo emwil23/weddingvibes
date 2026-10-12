@@ -162,10 +162,16 @@ export default function Water({
     });
     const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
+    let w = 0;
+    let h = 0;
     function resize() {
-      renderer.setSize(wrap!.offsetWidth, wrap!.offsetHeight);
+      // Phones fire resize as the address bar moves; resizing a canvas clears it, so skip no-ops
+      if (wrap!.offsetWidth === w && wrap!.offsetHeight === h) return;
+      w = wrap!.offsetWidth;
+      h = wrap!.offsetHeight;
+      renderer.setSize(w, h);
       Object.assign(gl.canvas.style, { width: "100%", height: "100%", display: "block" });
-      program.uniforms.uAspect.value = wrap!.offsetWidth / (wrap!.offsetHeight || 1);
+      program.uniforms.uAspect.value = w / (h || 1);
     }
     resize();
     window.addEventListener("resize", resize);

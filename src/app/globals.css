@@ -44,7 +44,7 @@ body {
   font-family: var(--font-body);
   background-color: var(--paper);
   color: var(--ink);
-  overflow-x: hidden;
+  overflow-x: clip; /* not hidden: that would turn the body into a scroll container and break sticky in Safari */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
