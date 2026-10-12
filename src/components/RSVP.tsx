@@ -81,7 +81,7 @@ export default function RSVP() {
   const attendanceInvalid = !!(touched.attendance && errors.attendance);
 
   return (
-    <section id="rsvp" className="relative bg-dusk pt-24 pb-28 text-ink [--gold:#8A6430] md:pt-36 md:pb-40">
+    <section id="rsvp" className="relative pt-24 pb-28 text-ink [--gold:#8A6430] md:pt-36 md:pb-40">
 
       <div className="relative z-10 mx-auto grid max-w-7xl items-start gap-14 px-6 md:px-10 lg:grid-cols-12 lg:gap-10">
         {/* Left: invitation */}

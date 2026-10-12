@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Renderer, Program, Mesh, Triangle } from "ogl";
-import { journey, paperAt, smoothstep } from "@/lib/journey";
+import { dive, journey, paperAt, smoothstep } from "@/lib/journey";
 import { reducedMotion } from "@/components/Motion";
 
 // ─── The river ───────────────────────────────────────────────────────────────
@@ -193,6 +193,7 @@ export default function River({ className = "" }: { className?: string }) {
       raf = requestAnimationFrame(frame);
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      if (dive.under) return; // the water covers the whole screen
       const u = program.uniforms;
       if (!still) u.uTime.value += dt;
       u.uOffset.value = journey.x / h;

@@ -211,3 +211,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Underwater at the confluence, the fixed chips read pale against the dark water */
+html[data-under] :is(header, [data-music]) {
+  --ink: #F4EEE4;
+  --gold: #EBCB8B;
+}

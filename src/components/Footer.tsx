@@ -9,7 +9,7 @@ export default function Footer() {
   const ref = useGsapReveal({ stagger: 0.12 });
 
   return (
-    <footer className="relative bg-dusk px-6 pt-[14vh] pb-10 text-ink md:px-10">
+    <footer className="relative px-6 pt-[14vh] pb-10 text-ink md:px-10">
       <div className="mx-auto w-full max-w-7xl">
         <p className="eyebrow text-center text-ink/60">With love</p>
         <SplitHeading as="p" className="display mt-6 text-center text-[clamp(2.4rem,11vw,11rem)] leading-[0.95]">

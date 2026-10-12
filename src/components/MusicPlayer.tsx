@@ -34,6 +34,7 @@ export default function MusicPlayer() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        data-music
         className="fixed top-4 right-[4.25rem] z-50 flex flex-row-reverse items-center gap-2.5 group md:top-6 md:right-[5.5rem]"
         aria-label={playing ? "Pause music" : "Play music"}
       >

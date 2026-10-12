@@ -17,9 +17,10 @@ import {
   VENUE,
   WEDDING,
 } from "@/lib/constants";
-import { journey, paperAt, smoothstep } from "@/lib/journey";
+import { dive, journey, paperAt, smoothstep, worldToScroll } from "@/lib/journey";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 import River, { streamY } from "@/components/River";
+import Water from "@/components/Water";
 import { reducedMotion } from "@/components/Motion";
 
 if (typeof window !== "undefined") {
@@ -28,11 +29,14 @@ if (typeof window !== "undefined") {
 
 // ─── The journey ─────────────────────────────────────────────────────────────
 // One long scroll-painting. The page scrolls down; the world travels sideways:
-// from the mountains where two streams rise, past the note, to the confluence,
-// and on to Guwahati. The sun crosses the sky as you go and the paper warms to dusk.
+// from the mountains where two streams rise, past the note, to the confluence.
+// There the world stops and the river rises over the page, where the two colours
+// steep into one while the blend poem is read. Then the water falls back and it travels on to
+// Guwahati. The sun crosses the sky as you go and the paper warms to dusk.
 
 const RIVER_BAND = 0.32; // share of the stage the river occupies — keep in step with the classes below
 const FAR_SPEED = 0.3; // the mountains drift at this fraction of the world's speed
+const DIVE_SCREENS = 5; // how many screens of scroll the dive lasts
 
 const stanzas = (lines: string[]) =>
   lines
@@ -45,14 +49,21 @@ const NUMERALS = ["i", "ii", "iii", "iv", "v", "vi"];
 
 const BLOCK = "flex h-full w-[84vw] shrink-0 flex-col justify-center md:w-[44vw] xl:w-[36vw]";
 const POEM = "display text-[clamp(1.4rem,3.9svh,2.7rem)] leading-[1.22]";
+// Underwater, each verse takes the whole screen in turn. Their hidden starting states live in CSS
+// (not in gsap "from" values), so no refresh or revert can ever leave two verses showing at once.
+const LAYER =
+  "invisible absolute inset-0 flex flex-col items-center justify-center px-[8vw] text-center opacity-0 motion-reduce:visible motion-reduce:static motion-reduce:py-10 motion-reduce:opacity-100";
+const SUNK = "[transform:translateY(115%)] motion-reduce:[transform:none]";
+const UNSEEN = "opacity-0 motion-reduce:opacity-100 motion-reduce:[transform:none]";
 
 // Lines that rise out of a mask when their block drifts into view
-function Lines({ lines, className }: { lines: string[]; className?: string }) {
+// `sunk` starts them below the mask in CSS, for tweens that only ever animate *to* the resting state
+function Lines({ lines, className, sunk }: { lines: string[]; className?: string; sunk?: boolean }) {
   return (
     <p className={className}>
       {lines.map((line) => (
         <span key={line} className="block overflow-hidden py-[0.06em]">
-          <span data-line className="block">{line}</span>
+          <span data-line className={`block ${sunk ? SUNK : ""}`}>{line}</span>
         </span>
       ))}
     </p>
@@ -144,21 +155,29 @@ export default function Journey() {
     const boats = q("[data-boat]") as HTMLElement[];
     const panels = q("[data-panel]") as HTMLElement[];
 
+    const water = one("[data-water]");
+    const bank = one("[data-bank]");
+    const reveals: { block: HTMLElement; play: gsap.core.Timeline; left: number; done: boolean }[] = [];
+
     const distance = () => track.scrollWidth - window.innerWidth;
     const worldLeft = (el: Element) => el.getBoundingClientRect().left - track.getBoundingClientRect().left;
 
     // The section is as tall as the journey is long: 1px of scroll moves the world 1px
     function measure() {
-      root!.style.height = `${distance() + window.innerHeight}px`;
+      journey.hold = window.innerHeight * DIVE_SCREENS;
+      journey.holdAt = worldLeft(one("[data-confluence]"));
+      root!.style.height = `${distance() + journey.hold + window.innerHeight}px`;
       far.style.width = `${window.innerWidth + distance() * FAR_SPEED}px`;
       journey.sourceX = worldLeft(one("[data-source]"));
-      journey.confluenceX = worldLeft(one("[data-confluence]"));
+      journey.confluenceX = journey.holdAt + window.innerWidth * 0.5;
+      reveals.forEach((r) => (r.left = worldLeft(r.block)));
     }
     measure();
     ScrollTrigger.addEventListener("refreshInit", measure);
 
     const ctx = gsap.context(() => {
       const setFar = gsap.quickSetter(far, "x", "px");
+      const setX = gsap.quickSetter(track, "x", "px");
       let chapter = "";
 
       // Everything that follows the world reads from this one update, so nothing drifts apart
@@ -189,6 +208,13 @@ export default function Journey() {
           boat.style.opacity = String(at.grow);
         });
 
+        // Blocks come alive as the world carries them into view
+        for (const r of reveals) {
+          if (r.done || r.left > x + window.innerWidth * 0.84) continue;
+          r.done = true;
+          r.play.play();
+        }
+
         // Tell the nav which chapter is under the reader
         const centre = x + window.innerWidth * 0.45;
         const here = panels.filter((el) => el.offsetLeft <= centre).pop()?.id ?? panels[0].id;
@@ -198,8 +224,73 @@ export default function Journey() {
         }
       }
 
-      const travel = gsap.to(track, {
-        x: () => -distance(),
+      // ── The dive: 10 units long, played by the scroll while the world holds still ──
+      const pool = { cover: 0 };
+      function clip() {
+        // The river swells: its waterline climbs from the bottom edge until the screen is under
+        dive.level = pool.cover * 1.2 - 0.1;
+        dive.on = pool.cover > 0.001;
+        dive.under = pool.cover > 0.999;
+        water.style.visibility = dive.on ? "visible" : "hidden";
+        bank.style.opacity = String(1 - smoothstep(0.2, 0.32, dive.level));
+        // The fixed chips turn pale once the water has reached them (see globals.css)
+        document.documentElement.toggleAttribute("data-under", dive.level > 0.97);
+      }
+      // Every element gets one tween per property: scrubbing back and forth must never leave two fighting.
+      // Layers fade in on the outer element and out on the inner one; the waterline is worked out in update().
+      const diving = gsap.timeline({ paused: true, defaults: { ease: "none" } });
+      const show = (el: Element, at: number, until: number) =>
+        diving
+          .to(el, { autoAlpha: 1, duration: 0.45, ease: "power2.out" }, at)
+          .to(el.firstElementChild, { autoAlpha: 0, y: -36, duration: 0.3, ease: "power2.in" }, until - 0.3);
+      const rise = (lines: ArrayLike<Element>, at: number) =>
+        diving.to(lines, { y: 0, duration: 0.45, ease: "power3.out", stagger: 0.07 }, at);
+      const verses = q("[data-verse]");
+      const last = verses[verses.length - 1];
+
+      show(verses[0], 1.15, 2.6);
+      verses.slice(1, -1).forEach((verse, i) => {
+        show(verse, 2.6 + i * 1.2, 3.8 + i * 1.2);
+        rise(verse.querySelectorAll("[data-line]"), 2.6 + i * 1.2);
+      });
+      show(last, 7.4, 9.2);
+      rise(last.querySelectorAll("[data-line]"), 8.05);
+      diving
+        .to(dive, { mix: 1, duration: 5 }, 2.6) // the two colours steep into one as the verses pass
+        .to(q("[data-t], [data-e]"), { x: 0, autoAlpha: 1, duration: 0.8, ease: "power2.out" }, 7.4)
+        .to(q("[data-and]"), { scale: 1, autoAlpha: 1, duration: 0.35, ease: "back.out(1.7)" }, 8)
+        .to(last.querySelectorAll("[data-rise]"), { autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 8.35)
+        .set({}, {}, 10);
+      const goUnder = gsap.parseEase("power1.inOut");
+      const comeUp = gsap.parseEase("power1.inOut");
+      clip();
+
+      // Blocks rise once, when paint() sees them arrive
+      (q("[data-reveal]") as HTMLElement[]).forEach((block) => {
+        const play = gsap.timeline({ paused: true });
+        const lines = block.querySelectorAll("[data-line]");
+        const rest = block.querySelectorAll("[data-rise]");
+        if (lines.length) play.from(lines, { yPercent: 115, duration: 1.2, ease: "power4.out", stagger: 0.09 }, 0);
+        if (rest.length) play.from(rest, { y: 36, autoAlpha: 0, duration: 1.1, ease: "power3.out", stagger: 0.1 }, 0);
+        if (!lines.length && !rest.length) play.from(block, { y: 44, autoAlpha: 0, duration: 1.2, ease: "power3.out" }, 0);
+        reveals.push({ block, play, left: worldLeft(block), done: false });
+      });
+
+      // Scroll px map to world px one to one, except at the confluence, where the world waits for the dive
+      const pos = { s: 0 };
+      function update() {
+        const over = pos.s - journey.holdAt;
+        const x = over <= 0 ? pos.s : over < journey.hold ? journey.holdAt : pos.s - journey.hold;
+        setX(-x);
+        const d = gsap.utils.clamp(0, 1, over / journey.hold) * 10;
+        diving.time(d);
+        // …rising through the first screen and a bit, and draining back into the river at the end
+        pool.cover = goUnder(gsap.utils.clamp(0, 1, d / 1.3)) * (1 - comeUp(gsap.utils.clamp(0, 1, (d - 9.2) / 0.8)));
+        clip();
+        paint(x, x / distance());
+      }
+      gsap.to(pos, {
+        s: () => distance() + journey.hold,
         ease: "none",
         scrollTrigger: {
           trigger: root,
@@ -209,12 +300,11 @@ export default function Journey() {
           invalidateOnRefresh: true,
           // The film has them facing left, so it is mirrored to walk downstream; scrolling back turns them around
           onUpdate: (self) => gsap.to(one("[data-couple-face]"), { scaleX: -self.direction, duration: 0.5, overwrite: true }),
+          onRefresh: update,
         },
-        onUpdate() {
-          paint(-Number(gsap.getProperty(track, "x")), this.progress());
-        },
+        onUpdate: update,
       });
-      paint(0, 0);
+      update();
 
       // Past the journey's end the page turns downward into the reply
       ScrollTrigger.create({
@@ -223,34 +313,6 @@ export default function Journey() {
         onEnter: () => window.dispatchEvent(new CustomEvent("chapter", { detail: "rsvp" })),
         onLeaveBack: () => window.dispatchEvent(new CustomEvent("chapter", { detail: chapter })),
       });
-
-      // Blocks come alive as the world carries them into view
-      (q("[data-reveal]") as HTMLElement[]).forEach((block) => {
-        const at = { trigger: block, containerAnimation: travel, start: "left 84%", once: true };
-        const lines = block.querySelectorAll("[data-line]");
-        const rest = block.querySelectorAll("[data-rise]");
-        if (lines.length)
-          gsap.from(lines, { yPercent: 115, duration: 1.2, ease: "power4.out", stagger: 0.09, scrollTrigger: at });
-        if (rest.length)
-          gsap.from(rest, { y: 36, autoAlpha: 0, duration: 1.1, ease: "power3.out", stagger: 0.1, scrollTrigger: at });
-        if (!lines.length && !rest.length)
-          gsap.from(block, { y: 44, autoAlpha: 0, duration: 1.2, ease: "power3.out", scrollTrigger: at });
-      });
-
-      // T meets E exactly as the streams do
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: one("[data-confluence]"),
-            containerAnimation: travel,
-            start: "left 95%",
-            end: "left 35%",
-            scrub: true,
-          },
-        })
-        .fromTo(q("[data-t]"), { xPercent: -90, yPercent: -18, autoAlpha: 0 }, { xPercent: 0, yPercent: 0, autoAlpha: 1, ease: "power2.out" }, 0)
-        .fromTo(q("[data-e]"), { xPercent: 90, yPercent: 18, autoAlpha: 0 }, { xPercent: 0, yPercent: 0, autoAlpha: 1, ease: "power2.out" }, 0)
-        .fromTo(q("[data-and]"), { scale: 0, rotate: -50, autoAlpha: 0 }, { scale: 1, rotate: 0, autoAlpha: 1, duration: 0.3, ease: "back.out(1.7)" }, 0.7);
     }, root);
 
     // Opening: hold the first scene until the loader lifts, then let it be drawn in
@@ -278,7 +340,7 @@ export default function Journey() {
       const block = (e.target as HTMLElement).closest("[data-block]");
       if (!block || !(e.target as HTMLElement).matches(":focus-visible")) return;
       const top = root!.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: top + Math.max(0, worldLeft(block) - window.innerWidth * 0.2) });
+      window.scrollTo({ top: top + worldToScroll(Math.max(0, worldLeft(block) - window.innerWidth * 0.2)) });
     }
     track.addEventListener("focusin", onFocus);
 
@@ -288,6 +350,10 @@ export default function Journey() {
       track.removeEventListener("focusin", onFocus);
       hero.revert();
       ctx.revert();
+      document.documentElement.removeAttribute("data-under");
+      dive.on = dive.under = false;
+      dive.mix = 0;
+      dive.level = -0.1;
     };
   }, []);
 
@@ -309,7 +375,8 @@ export default function Journey() {
           }}
         />
 
-        {/* Far shore: pencil mountains drifting slower than the world */}
+        {/* Far shore: pencil mountains drifting slower than the world. Two of the scans are cropped
+            mid-drawing, so those edges are masked to trail off into the paper. */}
         <div
           data-far
           aria-hidden="true"
@@ -322,7 +389,7 @@ export default function Journey() {
             width={1118}
             height={898}
             priority
-            className="absolute bottom-0 left-[58vw] h-[46svh] w-auto max-w-none opacity-45 md:left-[44vw] md:h-[62svh]"
+            className="absolute bottom-0 left-[58vw] h-[46svh] w-auto max-w-none opacity-45 md:left-[44vw] md:h-[62svh] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_26%),linear-gradient(to_top,transparent,#000_14%)]"
           />
           <Image
             src="/illustrations/mountain_ink.webp"
@@ -336,7 +403,7 @@ export default function Journey() {
             alt=""
             width={3000}
             height={1278}
-            className="absolute bottom-0 right-0 h-[50svh] w-auto max-w-none opacity-40"
+            className="absolute bottom-0 right-0 h-[50svh] w-auto max-w-none opacity-40 [mask-image:linear-gradient(to_right,transparent,#000_7%,#000_86%,transparent)]"
           />
         </div>
 
@@ -352,13 +419,40 @@ export default function Journey() {
           </div>
         </div>
 
+        {/* The couple walk the bank; the film only advances while you scroll */}
+        <div
+          data-couple
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-[27.5%] left-[1vw] w-[clamp(190px,23vw,360px)] select-none will-change-transform motion-reduce:hidden md:left-[5vw]"
+          style={{ transform: "translate3d(-110%, 0, 0)" }}
+        >
+          <div data-couple-face style={{ transform: "scaleX(-1)" }}>
+            <ChromakeyVideo
+              mp4Src="/illustrations/Green_clear_background_202604212207.mp4"
+              mobileSrc="/illustrations/Green_clear_background_202604212207_mobile.mp4"
+              keyColor={[97, 133, 86]}
+              walkOnScroll
+              className="h-auto w-full"
+            />
+          </div>
+        </div>
+
+        {/* The river, risen over the page: Tina's rose and Emmanuel's indigo, then one colour */}
+        <Water
+          data-water
+          state={dive}
+          colors={["#B5566A", "#34558A", "#5B6AA6", "#3E4C86"]}
+          shallow={["#CC7866", "#4A6BA1", "#738CB8"]}
+          className="invisible absolute inset-0 motion-reduce:hidden"
+        />
+
         {/* The world */}
         <div
           data-track
           className="relative flex h-full w-max will-change-transform motion-reduce:w-full motion-reduce:flex-col"
         >
           {/* The bank they walk on */}
-          <div aria-hidden="true" className="bank absolute inset-x-0 bottom-[30%] h-10 motion-reduce:hidden" />
+          <div data-bank aria-hidden="true" className="bank absolute inset-x-0 bottom-[30%] h-10 motion-reduce:hidden" />
 
           {/* ── I. The source ── */}
           <div id="hero" data-panel data-hero className="relative h-full w-screen shrink-0 px-[7vw] pt-[15svh] pb-[45svh]">
@@ -420,35 +514,43 @@ export default function Journey() {
             ))}
           </div>
 
-          {/* ── III. The blend, and the confluence ── */}
-          <div id="gallery" data-panel className="flex h-full shrink-0 gap-[10vw] px-[8vw] pt-[14svh] pb-[45svh] md:gap-[7vw]">
-            <div data-block data-reveal className={BLOCK}>
-              <p data-rise className="eyebrow text-ink/60">
-                <span className="text-gold">02</span> — The blend
-              </p>
-              <p data-rise className="display mt-4 text-[clamp(2.6rem,9svh,5.5rem)]">
-                How I found my <em>cup of tea</em>
-              </p>
+          {/* ── III. The confluence: the world waits here while the page goes under ── */}
+          <div
+            id="gallery"
+            data-panel
+            data-confluence
+            className="relative h-full w-screen shrink-0 text-paper-2 motion-reduce:h-auto motion-reduce:w-full motion-reduce:text-ink"
+          >
+            <div data-verse className={LAYER}>
+              <div>
+                <p className="eyebrow opacity-75">
+                  <span className="text-[#EBCB8B] motion-reduce:text-gold">02</span> — The blend
+                </p>
+                <p className="display mt-4 text-[clamp(2.4rem,min(10svh,13vw),6.5rem)]">
+                  How I found my <em>cup of tea</em>
+                </p>
+              </div>
             </div>
             {BLEND.slice(0, -1).map((lines, i) => (
-              <div key={i} data-block data-reveal className={BLOCK}>
-                <p data-rise className="mb-[2svh] font-serif text-xl italic text-gold">{NUMERALS[i]}.</p>
-                <Lines lines={lines} className={POEM} />
+              <div key={i} data-verse className={LAYER}>
+                <div>
+                  <p className="mb-[2.5svh] font-serif text-xl italic text-[#EBCB8B] motion-reduce:text-gold">{NUMERALS[i]}.</p>
+                  <Lines sunk lines={lines} className="display text-[clamp(1.35rem,min(5.4svh,6vw),3.6rem)] leading-[1.2]" />
+                </div>
               </div>
             ))}
-
-            <div data-block data-confluence className={`${BLOCK} items-center text-center md:w-[60vw] xl:w-[52vw]`}>
-              <p
-                aria-label={`${COUPLE.partner1[0]} and ${COUPLE.partner2[0]}`}
-                className="display flex items-baseline justify-center text-[min(40vw,30svh)] leading-[0.82]"
-              >
-                <span data-t className="block text-rose">{COUPLE.partner1[0]}</span>
-                <span data-and className="mx-[0.03em] block font-script text-[0.5em] text-gold">&amp;</span>
-                <span data-e className="block text-indigo">{COUPLE.partner2[0]}</span>
-              </p>
-              <div data-reveal className="mt-[2.5svh]">
-                <Lines lines={BLEND[BLEND.length - 1]} className="font-serif text-[clamp(1.2rem,3.2svh,2rem)] italic leading-snug" />
-                <p data-rise className="eyebrow mt-[2svh] text-ink/60">{BLEND_POEM.closing}</p>
+            <div data-verse className={LAYER}>
+              <div>
+                <p
+                  aria-label={`${COUPLE.partner1[0]} and ${COUPLE.partner2[0]}`}
+                  className="display flex items-baseline justify-center text-[min(40vw,34svh)] leading-[0.82]"
+                >
+                  <span data-t className={`block [transform:translateX(-120%)] ${UNSEEN}`}>{COUPLE.partner1[0]}</span>
+                  <span data-and className={`mx-[0.03em] block font-script text-[0.5em] text-[#EBCB8B] [transform:scale(0.2)] motion-reduce:text-gold ${UNSEEN}`}>&amp;</span>
+                  <span data-e className={`block [transform:translateX(120%)] ${UNSEEN}`}>{COUPLE.partner2[0]}</span>
+                </p>
+                <Lines sunk lines={BLEND[BLEND.length - 1]} className="mt-[3svh] font-serif text-[clamp(1.2rem,3.4svh,2.1rem)] italic leading-snug" />
+                <p data-rise className={`eyebrow mt-[2.5svh] ${UNSEEN}`}>{BLEND_POEM.closing}</p>
               </div>
             </div>
           </div>
@@ -547,23 +649,6 @@ export default function Journey() {
           </div>
         </div>
 
-        {/* The couple walk the bank; the film only advances while you scroll */}
-        <div
-          data-couple
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-[27.5%] left-[1vw] w-[clamp(190px,23vw,360px)] select-none will-change-transform motion-reduce:hidden md:left-[5vw]"
-          style={{ transform: "translate3d(-110%, 0, 0)" }}
-        >
-          <div data-couple-face style={{ transform: "scaleX(-1)" }}>
-            <ChromakeyVideo
-              mp4Src="/illustrations/Green_clear_background_202604212207.mp4"
-              mobileSrc="/illustrations/Green_clear_background_202604212207_mobile.mp4"
-              keyColor={[97, 133, 86]}
-              walkOnScroll
-              className="h-auto w-full"
-            />
-          </div>
-        </div>
       </div>
     </section>
   );

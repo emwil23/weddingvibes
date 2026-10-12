@@ -5,7 +5,15 @@ export const journey = {
   sourceX: 0, // world px where the two streams spring from the mountains
   confluenceX: 1e6, // world px where they meet
   progress: 0, // 0 at the source, 1 at journey's end
+  holdAt: 1e9, // world px where the world stops and the page dives into the confluence
+  hold: 0, // how many px of scroll the dive lasts
 };
+
+// The dive: Journey.tsx drives it, Water.tsx paints it, River.tsx rests while it is covered
+export const dive = { on: false, under: false, mix: 0, level: -0.1 };
+
+// World px → scroll px: past the confluence, the dive's scroll length sits in between
+export const worldToScroll = (x: number) => x + (x > journey.holdAt ? journey.hold : 0);
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 export const smoothstep = (a: number, b: number, v: number) => {
@@ -28,7 +36,7 @@ export function paperAt(t: number): [number, number, number] {
   return [mix(a[0], b[0], f - i), mix(a[1], b[1], f - i), mix(a[2], b[2], f - i)];
 }
 
-// Scroll to a chapter: panels inside the horizontal journey map 1px of travel to 1px of scroll
+// Scroll to a chapter: panels inside the horizontal journey map 1px of travel to 1px of scroll (plus the dive)
 export function scrollToChapter(id: string) {
   const el = document.getElementById(id);
   const world = document.getElementById("journey");
@@ -37,7 +45,7 @@ export function scrollToChapter(id: string) {
   const inside = world.contains(el) && el !== world;
   const max = world.offsetHeight - window.innerHeight;
   window.scrollTo({
-    top: inside ? top + Math.min(el.offsetLeft, max) : el.getBoundingClientRect().top + window.scrollY,
+    top: inside ? top + Math.min(worldToScroll(el.offsetLeft), max) : el.getBoundingClientRect().top + window.scrollY,
     behavior: "smooth",
   });
 }
