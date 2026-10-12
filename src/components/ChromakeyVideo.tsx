@@ -9,6 +9,7 @@ interface Props {
   keyColor?: [number, number, number];
   hueTolerance?: number;
   satMin?: number;
+  walkOnScroll?: boolean; // advance only while the page is scrolling, hold still otherwise
   className?: string;
 }
 
@@ -78,6 +79,7 @@ export default function ChromakeyVideo({
   keyColor = [97, 133, 86],
   hueTolerance = 30,
   satMin = 0.15,
+  walkOnScroll = false,
   className,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -130,10 +132,12 @@ export default function ChromakeyVideo({
       renderer.setSize(container!.offsetWidth, container!.offsetWidth * (h / w));
     }
 
-    let rafId: number;
+    let rafId = 0;
     let lastTime = 0;
+    let visible = false;
 
     function loop(t: number) {
+      if (!visible) return; // restarted by the observer
       rafId = requestAnimationFrame(loop);
       if (video!.paused || video!.ended || video!.readyState < 2) return;
       // ~24fps throttle
@@ -145,11 +149,39 @@ export default function ChromakeyVideo({
       renderer.render({ scene: mesh });
     }
 
+    // walkOnScroll: play on every scroll event, stop shortly after the last one
+    let idle = 0;
+    function step() {
+      if (!visible) return;
+      video!.play().catch(() => {});
+      window.clearTimeout(idle);
+      idle = window.setTimeout(() => video!.pause(), 170);
+    }
+
     function onLoaded() {
       size();
-      video!.play().catch(() => {});
-      rafId = requestAnimationFrame(loop);
+      if (!visible) return;
+      if (walkOnScroll) step(); // a few frames so there is a pose to hold
+      else video!.play().catch(() => {});
     }
+    if (walkOnScroll) window.addEventListener("scroll", step, { passive: true });
+
+    // Decode, upload and draw frames only while on screen — every instance used to run forever
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        cancelAnimationFrame(rafId);
+        if (visible) {
+          if (walkOnScroll) step();
+          else video.play().catch(() => {});
+          rafId = requestAnimationFrame(loop);
+        } else {
+          video.pause();
+        }
+      },
+      { rootMargin: "200px 0px" }
+    );
+    io.observe(container);
 
     if (video.readyState >= 2) onLoaded();
     else video.addEventListener("loadeddata", onLoaded, { once: true });
@@ -157,13 +189,16 @@ export default function ChromakeyVideo({
     window.addEventListener("resize", size);
 
     return () => {
+      io.disconnect();
+      window.clearTimeout(idle);
+      window.removeEventListener("scroll", step);
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", size);
       video.removeEventListener("loadeddata", onLoaded);
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [ready, src]);
+  }, [ready, src, walkOnScroll]);
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
@@ -174,7 +209,7 @@ export default function ChromakeyVideo({
         loop
         muted
         playsInline
-        autoPlay
+        autoPlay={!walkOnScroll}
         preload="auto"
         crossOrigin="anonymous"
         src={src}

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ChromakeyVideo from "@/components/ChromakeyVideo";
 import { useGsapReveal } from "@/hooks/useGsapReveal";
 import { COUPLE, WEDDING } from "@/lib/constants";
+import { SplitHeading } from "@/components/Motion";
 
 type Attendance = "yes" | "no" | null;
 
@@ -23,7 +24,8 @@ export default function RSVP() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const leftRef = useGsapReveal({ stagger: 0.12 });
+  const eyebrowRef = useGsapReveal<HTMLParagraphElement>({ type: "fadeIn" });
+  const leftRef = useGsapReveal({ stagger: 0.14 });
   const formRef = useGsapReveal({ type: "fadeUp" });
 
   function validate(): Errors {
@@ -74,242 +76,229 @@ export default function RSVP() {
     setSubmitted(true);
   };
 
+  const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+  const nameInvalid = !!(touched.name && errors.name);
+  const attendanceInvalid = !!(touched.attendance && errors.attendance);
+
   return (
-    <section
-      id="rsvp"
-      className="relative py-32 md:py-48 bg-cream dark:bg-charcoal overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto px-8 md:px-20 lg:px-32">
-        <div className="grid lg:grid-cols-2 gap-20 lg:gap-32 items-start">
+    <section id="rsvp" className="relative bg-dusk pt-24 pb-28 text-ink [--gold:#8A6430] md:pt-36 md:pb-40">
 
-          {/* Left: text block */}
+      <div className="relative z-10 mx-auto grid max-w-7xl items-start gap-14 px-6 md:px-10 lg:grid-cols-12 lg:gap-10">
+        {/* Left: invitation */}
+        <div className="lg:col-span-6">
+          <p ref={eyebrowRef} className="eyebrow mb-6 text-ink/50">
+            <span className="text-gold">04</span> — Kindly respond by {WEDDING.rsvpDeadline}
+          </p>
+          <SplitHeading className="display text-[clamp(3.4rem,9vw,8rem)]">
+            Will you
+            <br />
+            <em>join us?</em>
+          </SplitHeading>
+
           <div ref={leftRef}>
-            <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35 mb-4">
-              Kindly respond by July 1, 2026
+            <p className="mt-8 max-w-md font-serif text-2xl italic leading-snug text-ink/65">
+              We would be honoured to celebrate with you in Guwahati. Please let us know if you can make it.
             </p>
-            <h2
-              className="font-display text-charcoal dark:text-cream mb-8"
-              style={{
-                fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
-                letterSpacing: "0.01em",
-                lineHeight: 1.2,
-              }}
-            >
-              Will you
-              <br />
-              join us?
-            </h2>
-            <p className="font-body text-sm text-charcoal/55 dark:text-cream/45 leading-relaxed max-w-sm">
-              We would be honoured to celebrate with you in Guwahati.
-              <br />
-              Please let us know if you can make it.
-            </p>
-
-            {/* Couple video */}
-            <div className="mt-10">
+            <div className="pointer-events-none mt-8 max-w-lg select-none">
               <ChromakeyVideo
                 mp4Src="/illustrations/rsvp.mp4"
                 mobileSrc="/illustrations/rsvp_mobile.mp4"
                 keyColor={[77, 158, 99]}
                 hueTolerance={35}
                 satMin={0.2}
-                className="w-full h-auto"
+                className="h-auto w-full"
               />
             </div>
+          </div>
+        </div>
 
-            {/* Decorative date */}
-            <div className="mt-8 pt-8 border-t border-charcoal/10 dark:border-cream/10">
-              <p className="font-body text-charcoal/20 dark:text-cream/15"
-                style={{ fontSize: "clamp(1rem, 3vw, 2rem)", letterSpacing: "-0.01em" }}
+        {/* Right: reply card */}
+        <div
+          ref={formRef}
+          className="relative rounded-[2rem] border border-ink/10 bg-paper-2 p-7 shadow-[0_40px_80px_-40px_rgb(43_38_34/0.5)] md:p-12 lg:col-span-5 lg:col-start-8 lg:mt-24"
+        >
+          <AnimatePresence mode="wait">
+            {!submitted ? (
+              <motion.form
+                key="form"
+                onSubmit={handleSubmit}
+                noValidate
+                className="flex flex-col gap-10"
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
               >
-                {WEDDING.date}
-              </p>
-            </div>
-          </div>
+                {/* Hidden honeypot — not shown to humans */}
+                <input type="text" name="_hp" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
-          {/* Right: form */}
-          <div
-            ref={formRef}
-            className="relative z-10 backdrop-blur-md bg-cream/70 dark:bg-charcoal/70 p-8 md:p-12 rounded-3xl  dark:border-cream/10"
-          >
-            <AnimatePresence mode="wait">
-              {!submitted ? (
-                <motion.form
-                  key="form"
-                  onSubmit={handleSubmit}
-                  noValidate
-                  className="flex flex-col gap-10"
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {/* Hidden honeypot — not shown to humans */}
-                  <input type="text" name="_hp" tabIndex={-1} className="hidden" aria-hidden="true" />
+                <div>
+                  <label htmlFor="rsvp-name" className="eyebrow block text-ink/50">
+                    Full name <span className="text-gold">*</span>
+                  </label>
+                  <input
+                    id="rsvp-name"
+                    type="text"
+                    required
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); if (touched.name) setErrors((err) => ({ ...err, name: e.target.value.trim() ? undefined : "Name is required." })); }}
+                    onBlur={() => onBlur("name")}
+                    placeholder="Your name"
+                    aria-invalid={nameInvalid}
+                    aria-describedby="rsvp-name-error"
+                    className="field mt-2"
+                  />
+                  <FieldError id="rsvp-name-error" show={nameInvalid} message={errors.name} />
+                </div>
 
-                  {/* Name */}
-                  <div>
-                    <label className="block font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 dark:text-cream/35 mb-2">
-                      Full Name <span className="text-charcoal/30 dark:text-cream/25">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => { setName(e.target.value); if (touched.name) setErrors((err) => ({ ...err, name: e.target.value.trim() ? undefined : "Name is required." })); }}
-                      onBlur={() => onBlur("name")}
-                      placeholder="Your name"
-                      className={`input-minimal ${touched.name && errors.name ? "border-red-400 dark:border-red-400" : ""}`}
-                    />
-                    <FieldError show={!!(touched.name && errors.name)} message={errors.name} />
-                  </div>
-
-                  {/* Attendance */}
-                  <div>
-                    <label className="block font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 dark:text-cream/35 mb-5">
-                      Attendance <span className="text-charcoal/30 dark:text-cream/25">*</span>
-                    </label>
-                    <div className="flex gap-4">
-                      {(["yes", "no"] as const).map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => {
-                            setAttendance(opt);
-                            setErrors((err) => ({ ...err, attendance: undefined }));
-                            setTouched((t) => ({ ...t, attendance: true }));
-                          }}
-                          className={`flex-1 py-3 border text-xs tracking-[0.15em] uppercase font-body transition-all duration-300 ${
-                            touched.attendance && errors.attendance && !attendance
-                              ? "border-red-400 dark:border-red-400 text-charcoal/50 dark:text-cream/50"
-                              : "border-charcoal/20 dark:border-cream/20 text-charcoal/50 dark:text-cream/50 hover:border-charcoal/50 dark:hover:border-cream/50"
-                          } ${
-                            attendance === opt
-                              ? opt === "yes"
-                                ? "bg-green-50 dark:bg-green-950/40"
-                                : "bg-rose-50 dark:bg-rose-950/40"
-                              : ""
-                          }`}
-                        >
-                          {opt === "yes" ? "Joyfully accepts" : "Regretfully declines"}
-                        </button>
-                      ))}
-                    </div>
-                    <FieldError show={!!(touched.attendance && errors.attendance)} message={errors.attendance} />
-                  </div>
-
-                  {/* Message */}
-                  <div>
-                    <label className="block font-body text-[10px] tracking-[0.2em] uppercase text-charcoal/40 dark:text-cream/35 mb-2">
-                      Message
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="A note for the couple (optional)"
-                      className="input-minimal resize-none"
-                    />
-                  </div>
-
-                  {/* Form-level error */}
-                  <AnimatePresence>
-                    {errors.form && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="font-body text-xs text-red-500 dark:text-red-400 -mt-4"
-                      >
-                        {errors.form}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Submit */}
-                  <motion.button
-                    type="submit"
-                    disabled={loading}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="relative mt-2 w-full py-4 border border-charcoal dark:border-cream text-charcoal dark:text-cream font-body text-xs tracking-[0.2em] uppercase transition-all duration-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-charcoal hover:text-cream dark:hover:bg-cream dark:hover:text-charcoal"
-                  >
-                    {loading ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
-                        Sending…
-                      </span>
-                    ) : (
-                      "Send RSVP"
-                    )}
-                  </motion.button>
-                </motion.form>
-              ) : (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-                  className="flex flex-col gap-6 pt-8"
-                >
-                  <p className="font-body text-[10px] tracking-[0.3em] uppercase text-charcoal/40 dark:text-cream/35">
-                    Thank you
+                <div role="radiogroup" aria-labelledby="rsvp-attendance" aria-describedby="rsvp-attendance-error">
+                  <p id="rsvp-attendance" className="eyebrow text-ink/50">
+                    Attendance <span className="text-gold">*</span>
                   </p>
-                  {attendance === "yes" ? (
-                    <>
-                      <h3
-                        className="font-body text-charcoal dark:text-cream"
-                        style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "-0.02em", lineHeight: 1 }}
+                  {/* Segmented control — the fill glides to the chosen answer */}
+                  <div
+                    className={`mt-4 grid grid-cols-2 rounded-full border p-1.5 transition-colors duration-500 ${
+                      attendanceInvalid ? "border-[#C2553F]" : "border-ink/15"
+                    }`}
+                  >
+                    {(["yes", "no"] as const).map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="radio"
+                        aria-checked={attendance === opt}
+                        onClick={() => {
+                          setAttendance(opt);
+                          setErrors((err) => ({ ...err, attendance: undefined }));
+                          setTouched((t) => ({ ...t, attendance: true }));
+                        }}
+                        className={`eyebrow relative rounded-full px-2 py-4 !text-[0.625rem] !tracking-[0.16em] transition-colors duration-500 ${
+                          attendance === opt ? "text-paper" : "text-ink/60 hover:text-ink"
+                        }`}
                       >
-                        We can&apos;t wait
-                        <br />
-                        to see you.
-                      </h3>
-                      <p className="font-body text-sm text-charcoal/55 dark:text-cream/45 leading-relaxed">
-                        {name}, your RSVP has been received.
-                        <br />
-                        {COUPLE.fullNames} 🖤
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h3
-                        className="font-body text-charcoal dark:text-cream"
-                        style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "-0.02em", lineHeight: 1 }}
-                      >
-                        You will be
-                        <br />
-                        missed.
-                      </h3>
-                      <p className="font-body text-sm text-charcoal/55 dark:text-cream/45 leading-relaxed">
-                        {name}, we&apos;re sorry you can&apos;t make it.
-                        <br />
-                        We&apos;ll be thinking of you. {COUPLE.fullNames} 🖤
-                      </p>
-                    </>
+                        {attendance === opt && (
+                          <motion.span
+                            layoutId="rsvp-choice"
+                            className="absolute inset-0 rounded-full bg-ink"
+                            transition={{ type: "spring", stiffness: 360, damping: 32 }}
+                          />
+                        )}
+                        <span className="relative">{opt === "yes" ? "Joyfully accepts" : "Regretfully declines"}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <FieldError id="rsvp-attendance-error" show={attendanceInvalid} message={errors.attendance} />
+                </div>
+
+                <div>
+                  <label htmlFor="rsvp-message" className="eyebrow block text-ink/50">
+                    Message
+                  </label>
+                  <textarea
+                    id="rsvp-message"
+                    rows={2}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="A note for the couple (optional)"
+                    className="field mt-2 resize-none"
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {errors.form && (
+                    <motion.p
+                      role="alert"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="-mt-4 text-xs text-[#C2553F]"
+                    >
+                      {errors.form}
+                    </motion.p>
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                </AnimatePresence>
+
+                <motion.button
+                  type="submit"
+                  disabled={loading}
+                  whileTap={{ scale: 0.98 }}
+                  className="btn-fill eyebrow w-full rounded-full border border-ink py-5 text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {loading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                      Sending…
+                    </span>
+                  ) : (
+                    "Send RSVP"
+                  )}
+                </motion.button>
+              </motion.form>
+            ) : (
+              <motion.div
+                key="success"
+                role="status"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: EXPO }}
+                className="flex flex-col gap-6 py-6"
+              >
+                {/* Seal that draws itself */}
+                <svg viewBox="0 0 64 64" className="h-16 w-16 text-gold" fill="none" stroke="currentColor" strokeWidth="1.25" aria-hidden="true">
+                  <motion.circle
+                    cx="32" cy="32" r="30"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.2, ease: EXPO }}
+                  />
+                  <motion.path
+                    d={attendance === "yes" ? "M20 33l8 8 16-18" : "M32 44s-12-7-12-15a6.5 6.5 0 0 1 12-3 6.5 6.5 0 0 1 12 3c0 8-12 15-12 15z"}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.9, ease: EXPO, delay: 0.6 }}
+                  />
+                </svg>
+                <p className="eyebrow text-ink/50">Thank you</p>
+                <h3 className="display text-[clamp(2.6rem,5vw,4.25rem)]">
+                  {attendance === "yes" ? (
+                    <>We can&apos;t wait <em>to see you.</em></>
+                  ) : (
+                    <>You will be <em>missed.</em></>
+                  )}
+                </h3>
+                <p className="font-serif text-xl italic leading-relaxed text-ink/65">
+                  {attendance === "yes"
+                    ? `${name}, your RSVP has been received.`
+                    : `${name}, we're sorry you can't make it. We'll be thinking of you.`}
+                  <br />
+                  <span className="text-gold">{COUPLE.fullNames}</span>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </section>
   );
 }
 
-function FieldError({ show, message }: { show: boolean; message?: string }) {
+function FieldError({ id, show, message }: { id: string; show: boolean; message?: string }) {
   return (
-    <AnimatePresence>
-      {show && message && (
-        <motion.p
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mt-2 font-body text-xs text-red-500 dark:text-red-400"
-        >
-          {message}
-        </motion.p>
-      )}
-    </AnimatePresence>
+    <div id={id} aria-live="polite">
+      <AnimatePresence>
+        {show && message && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-2 text-xs text-[#C2553F]"
+          >
+            {message}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

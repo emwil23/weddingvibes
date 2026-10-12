@@ -1,139 +1,149 @@
 @import "tailwindcss";
 
-/* ─── Color Variables ─────────────────────────────────────────────────────── */
+/* ─── Design tokens ───────────────────────────────────────────────────────── */
 :root {
-  --background: #F7F2ED;
-  --foreground: #1A1A1A;
+  --paper: #F4EEE4;
+  --paper-2: #FBF8F1;
+  --ink: #2B2622;
+  --gold: #A07C3F;
+  --rose: #C4705E;   /* her river — the saree */
+  --indigo: #3F5F8F; /* his river — the suit */
+  --dusk: #EACFC0;   /* the paper at journey's end */
 
-  --blush: #EED6D3;
-  --blush-light: #F6E7E5;
-  --dusty-rose: #D4A5A0;
-  --rose-deep: #B87C77;
-
-  --taupe: #8A7F7C;
-  --taupe-light: #CFC6C3;
-
-  --cursor-overlay: rgba(26, 26, 26, 0.10);
-  --cursor-ring: rgba(26, 26, 26, 0.25);
+  --cursor-overlay: rgba(43, 38, 34, 0.10);
+  --cursor-ring: rgba(43, 38, 34, 0.30);
 }
 
-.dark {
-  --background: #1C1A19;
-  --foreground: #F7F2ED;
-
-  --blush: #CFA3A0;
-  --blush-light: #2A2625;
-  --dusty-rose: #A97C78;
-  --rose-deep: #8C5F5B;
-
-  --taupe: #B8AEAA;
-  --taupe-light: #6E6562;
-
-  --cursor-overlay: rgba(247, 242, 237, 0.15);
-  --cursor-ring: rgba(247, 242, 237, 0.35);
-}
-
-/* ─── Tailwind theme tokens ───────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-display: var(--font-display), Georgia, serif;
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-gold: var(--gold);
+  --color-rose: var(--rose);
+  --color-indigo: var(--indigo);
+  --color-dusk: var(--dusk);
+  --font-serif: var(--font-serif), Georgia, "Times New Roman", serif;
+  --font-script: var(--font-display), "Snell Roundhand", cursive;
   --font-body: var(--font-body), system-ui, sans-serif;
-  --font-mono: var(--font-mono), monospace;
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-spin-slow: spin 24s linear infinite;
 }
 
-/* ─── Base Reset + Lenis ──────────────────────────────────────────────────── */
-html.lenis,
-html.lenis body {
-  height: auto;
+@keyframes marquee {
+  to { transform: translate3d(-50%, 0, 0); }
 }
 
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-/* ─── Global Styles ───────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--paper);
+  color: var(--ink);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Custom Scrollbar ────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 2px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D4A5A0;
-  border-radius: 1px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #A97C78;
-}
-
-/* ─── Text Selection ──────────────────────────────────────────────────────── */
 ::selection {
-  background-color: #D4A5A0;
-  color: #F7F2ED;
+  background-color: var(--gold);
+  color: var(--paper);
 }
 
-.dark ::selection {
-  background-color: #A97C78;
-  color: #1C1A19;
+:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 4px;
 }
 
-/* ─── Film Grain Texture ──────────────────────────────────────────────────── */
+/* Firefox + WebKit thin scrollbar */
+html { scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold); }
+
+/* ─── Type roles ──────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.display {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+/* Link with a hairline that redraws on hover */
+.link-line {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 100% 1px;
+  transition: background-size 0.5s var(--ease-expo);
+}
+.link-line:hover {
+  background-size: 0% 1px;
+  background-position: 100% 100%;
+}
+
+/* Button whose fill rises from below on hover */
+.btn-fill {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.5s var(--ease-expo);
+}
+.btn-fill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ink);
+  transform: translateY(101%);
+  transition: transform 0.6s var(--ease-expo);
+}
+.btn-fill:hover:not(:disabled),
+.btn-fill:focus-visible { color: var(--paper); }
+.btn-fill:hover:not(:disabled)::before,
+.btn-fill:focus-visible::before { transform: translateY(0); }
+
+/* ─── Form fields ─────────────────────────────────────────────────────────── */
+.field {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 0;
+  padding: 0.6rem 0 0.8rem;
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.4s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field::placeholder {
+  color: color-mix(in srgb, var(--ink) 30%, transparent);
+  font-style: italic;
+}
+.field:focus { border-bottom-color: var(--gold); }
+.field[aria-invalid="true"] { border-bottom-color: #C2553F; }
+
+/* ─── Film Grain Texture (static: an animated full-screen layer costs every frame) ── */
 .grain::after {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
   background-size: 128px 128px;
   opacity: 0.03;
   pointer-events: none;
   z-index: 9999;
-  animation: grain 8s steps(10) infinite;
-}
-
-@keyframes grain {
-  0%   { transform: translate(0, 0); }
-  10%  { transform: translate(-2%, -3%); }
-  20%  { transform: translate(3%, 2%); }
-  30%  { transform: translate(-1%, 4%); }
-  40%  { transform: translate(4%, -1%); }
-  50%  { transform: translate(-3%, 3%); }
-  60%  { transform: translate(2%, -4%); }
-  70%  { transform: translate(-4%, 2%); }
-  80%  { transform: translate(3%, -2%); }
-  90%  { transform: translate(-2%, 4%); }
-  100% { transform: translate(0, 0); }
 }
 
 /* ─── Hide native cursor on pointer devices (custom cursor takes over) ───── */
@@ -143,52 +153,61 @@ body {
   }
 }
 
-/* ─── Gallery drag cursor ─────────────────────────────────────────────────── */
-.drag-cursor {
-  user-select: none;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* ─── Minimal underline form inputs ──────────────────────────────────────── */
-.input-minimal {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid rgba(26, 26, 26, 0.25);
-  border-radius: 0;
-  outline: none;
-  width: 100%;
-  padding: 0.75rem 0;
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  color: var(--foreground);
-  transition: border-color 0.3s ease;
+/* SplitText line masks: room for italic overhang and descenders inside the clip */
+.split-line { padding: 0.14em 0.08em; }
+.split-line-mask { margin: -0.14em -0.08em; }
+
+@keyframes scrollcue {
+  0% { transform: translateY(-100%); }
+  60%, 100% { transform: translateY(100%); }
 }
 
-.input-minimal::placeholder {
-  color: rgba(26, 26, 26, 0.35);
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
-  text-transform: uppercase;
+/* Card that leans toward the pointer (vars set from pointermove) */
+.tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.6s var(--ease-expo), box-shadow 0.6s var(--ease-expo), border-color 0.6s ease;
+}
+.tilt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.55), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.tilt:hover::before { opacity: 1; }
+
+/* ─── The journey ─────────────────────────────────────────────────────────── */
+/* Hand-drawn bank the couple walks on: one wobbly pencil line with grass tufts, tiled */
+.bank {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='40' viewBox='0 0 640 40' fill='none' stroke='%232B2622' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M0 30c40-3 70 2 120 0s90-4 150-1 100 3 160 0 120-2 210 1' opacity='.45'/%3E%3Cpath d='M64 29l-3-12M68 29l1-15M72 29l5-10M250 28l-4-9M254 28l0-13M259 28l4-8M455 29l-2-11M460 29l3-14M520 29l-3-7M524 29l2-9' opacity='.4'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 640px 40px;
 }
 
-.input-minimal:focus {
-  border-bottom-color: var(--foreground);
+/* Paper boats ride the current */
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
 }
 
-.dark .input-minimal {
-  border-bottom-color: rgba(245, 240, 234, 0.25);
+@keyframes cue {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
 }
 
-.dark .input-minimal::placeholder {
-  color: rgba(245, 240, 234, 0.35);
-}
-
-.dark .input-minimal:focus {
-  border-bottom-color: #F5F0EA;
-}
-
-/* ─── Vertical writing for nav labels ────────────────────────────────────── */
-.nav-label {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }

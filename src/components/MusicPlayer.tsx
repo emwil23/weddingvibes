@@ -34,11 +34,11 @@ export default function MusicPlayer() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed bottom-8 left-8 lg:left-24 z-50 flex items-center gap-2.5 group"
+        className="fixed top-4 right-[4.25rem] z-50 flex flex-row-reverse items-center gap-2.5 group md:top-6 md:right-[5.5rem]"
         aria-label={playing ? "Pause music" : "Play music"}
       >
         {/* Icon circle */}
-        <div className="relative w-8 h-8 rounded-full border border-charcoal/20 dark:border-cream/20 bg-cream/80 dark:bg-charcoal/80 backdrop-blur-sm flex items-center justify-center transition-colors duration-300 group-hover:border-charcoal/40 dark:group-hover:border-cream/40">
+        <div className="relative grid h-11 w-11 place-items-center rounded-full border border-ink/20 text-ink transition-colors duration-500 group-hover:border-ink">
           <AnimatePresence mode="wait">
             {playing ? (
               <motion.svg
@@ -48,7 +48,7 @@ export default function MusicPlayer() {
                 exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ duration: 0.15 }}
                 width="12" height="14" viewBox="0 0 12 14" fill="none"
-                className="text-charcoal/60 dark:text-cream/60"
+                className="text-ink"
               >
                 <rect x="0" y="0" width="4" height="14" rx="1.5" fill="currentColor" />
                 <rect x="8" y="0" width="4" height="14" rx="1.5" fill="currentColor" />
@@ -61,7 +61,7 @@ export default function MusicPlayer() {
                 exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ duration: 0.15 }}
                 width="12" height="14" viewBox="0 0 12 14" fill="none"
-                className="ml-0.5 text-charcoal/60 dark:text-cream/60"
+                className="ml-0.5 text-ink"
               >
                 <path d="M0 0L12 7L0 14V0Z" fill="currentColor" />
               </motion.svg>
@@ -71,7 +71,7 @@ export default function MusicPlayer() {
           {/* Pulse ring when playing */}
           {playing && (
             <motion.span
-              className="absolute inset-0 rounded-full border border-charcoal/15 dark:border-cream/15"
+              className="absolute inset-0 rounded-full border border-ink/30"
               animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
             />
@@ -83,7 +83,7 @@ export default function MusicPlayer() {
           {[1, 0.6, 0.9, 0.5].map((h, i) => (
             <motion.span
               key={i}
-              className="w-0.75 rounded-full bg-charcoal/40 dark:bg-cream/40"
+              className="w-0.75 rounded-full bg-ink"
               animate={playing ? { scaleY: [h, 0.3, h] } : { scaleY: 0.3 }}
               transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
               style={{ height: "100%", transformOrigin: "bottom" }}

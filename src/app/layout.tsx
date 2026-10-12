@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Alex_Brush, Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Alex_Brush, Cormorant_Garamond, Geist } from "next/font/google";
 import "./globals.css";
 
-// Hero display font — Alex Brush (script, hero names only)
+// Script — Alex Brush (ampersands and hand-written map notes)
 const alexBrush = Alex_Brush({
   variable: "--font-display",
   subsets: ["latin"],
@@ -18,10 +17,12 @@ const geist = Geist({
   display: "swap",
 });
 
-// Mono font — Geist Mono
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
+// Display serif — headings, poems, numerals
+const cormorant = Cormorant_Garamond({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -54,17 +55,10 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${alexBrush.variable} ${geist.variable} ${geistMono.variable}`}
+      className={`${alexBrush.variable} ${geist.variable} ${cormorant.variable}`}
     >
       <body className="grain">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

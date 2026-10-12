@@ -25,7 +25,7 @@ export function useGsapReveal<T extends HTMLElement = HTMLDivElement>(opts: Opti
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const from: gsap.TweenVars = { opacity: 0, willChange: "opacity, transform" };
     const to: gsap.TweenVars = { opacity: 1, willChange: "auto" };

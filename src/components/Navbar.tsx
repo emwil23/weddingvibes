@@ -1,186 +1,153 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useActiveSection } from "@/hooks/useActiveSection";
-import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
-import { NAV_ITEMS, COUPLE } from "@/lib/constants";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { COUPLE, NAV_ITEMS, WEDDING } from "@/lib/constants";
+import { scrollToChapter } from "@/lib/journey";
 
-const SECTION_IDS = NAV_ITEMS.map((item) => item.href.replace("#", ""));
 const EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
-// ─── Individual nav item — needs its own component to use useState for hover ──
-function NavItem({
-  item,
-  index,
-  isActive,
-  onNavigate,
-}: {
-  item: { label: string; href: string };
-  index: number;
-  isActive: boolean;
-  onNavigate: (href: string) => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <li
-      className="relative flex items-center"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Active section dot — slides between items via layoutId */}
-      <AnimatePresence>
-        {isActive && (
-          <motion.span
-            layoutId="nav-dot"
-            className="absolute w-0.75 h-0.75 rounded-full bg-charcoal dark:bg-cream"
-            style={{ left: "-14px" }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            transition={{ duration: 0.35, ease: EXPO }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Hover line — thin dash extending to the left of the nav text */}
-      <motion.span
-        animate={{
-          width: hovered && !isActive ? 10 : 0,
-          opacity: hovered && !isActive ? 0.45 : 0,
-        }}
-        transition={{ duration: 0.32, ease: EXPO }}
-        className="absolute h-px bg-charcoal dark:bg-cream"
-        style={{ left: "-22px", top: "50%" }}
-        aria-hidden
-      />
-
-      {/* Small index that fades in on hover — editorial detail */}
-      <motion.span
-        animate={{
-          opacity: hovered ? 1 : 0,
-          y: hovered ? 0 : 4,
-        }}
-        transition={{ duration: 0.3, ease: EXPO }}
-        className="absolute font-body text-[7px] tracking-widest text-charcoal/30 dark:text-cream/30 select-none"
-        style={{
-          top: "-16px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          writingMode: "horizontal-tb",
-        }}
-        aria-hidden
-      >
-        {String(index + 1).padStart(2, "0")}
-      </motion.span>
-
-      {/* Nav label */}
-      <motion.button
-        onClick={() => onNavigate(item.href)}
-        animate={{
-          x: hovered ? 3 : 0,
-          opacity: isActive ? 1 : hovered ? 0.85 : 0.28,
-        }}
-        transition={{ duration: 0.4, ease: EXPO }}
-        className="nav-label text-[10px] tracking-widest-2 uppercase font-body text-charcoal dark:text-cream"
-      >
-        {item.label}
-      </motion.button>
-    </li>
-  );
-}
+const ROMAN = ["I", "II", "III", "IV", "V"];
+const CHIP =
+  "grid h-11 w-11 place-items-center rounded-full border border-ink/20 text-ink transition-colors duration-500 hover:border-ink";
 
 export default function Navbar() {
-  const activeSection = useActiveSection(SECTION_IDS);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [active, setActive] = useState(NAV_ITEMS[0].href.slice(1));
+  const [ready, setReady] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const scrollTo = useCallback((href: string) => {
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Stay out of the way until the loader lifts
+  useEffect(() => {
+    const show = () => setReady(true);
+    if (document.documentElement.dataset.ready) show();
+    else window.addEventListener("site-ready", show, { once: true });
+    return () => window.removeEventListener("site-ready", show);
   }, []);
+
+  // The journey announces each chapter as the reader reaches it
+  useEffect(() => {
+    const onChapter = (e: Event) => setActive((e as CustomEvent<string>).detail);
+    window.addEventListener("chapter", onChapter);
+    return () => window.removeEventListener("chapter", onChapter);
+  }, []);
+
+  // Menu open: lock the page and let Escape close it
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const index = Math.max(0, NAV_ITEMS.findIndex((item) => item.href.slice(1) === active));
 
   return (
     <>
-      {/* ── Desktop: fixed left-side vertical nav ── */}
-      <nav className="fixed left-0 top-0 z-50 h-full hidden lg:flex flex-col items-center justify-between py-10 px-6 w-20">
-        {/* Top monogram */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, delay: 1.6 }}
-          className="text-xs tracking-widest-2 uppercase font-body text-charcoal/40 dark:text-cream/35 nav-label select-none"
+      <motion.header
+        initial={false}
+        animate={ready ? { y: 0, opacity: 1 } : { y: -24, opacity: 0 }}
+        transition={{ duration: 1.2, ease: EXPO, delay: 0.9 }}
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 pt-4 md:px-8 md:pt-6"
+      >
+        <button
+          type="button"
+          onClick={() => scrollToChapter("hero")}
+          aria-label="Back to the start"
+          className={`${CHIP} font-script text-xl leading-none`}
         >
-          {COUPLE.partner1[0]}&thinsp;&amp;&thinsp;{COUPLE.partner2[0]}
-        </motion.div>
+          <span className="translate-y-0.5">
+            {COUPLE.partner1[0]}&amp;{COUPLE.partner2[0]}
+          </span>
+        </button>
 
-        {/* Nav links */}
-        <motion.ul
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.8 }}
-          className="flex flex-col items-center gap-10"
-        >
-          {NAV_ITEMS.map((item, i) => (
-            <NavItem
-              key={item.href}
-              item={item}
-              index={i}
-              isActive={activeSection === item.href.replace("#", "")}
-              onNavigate={scrollTo}
-            />
-          ))}
-        </motion.ul>
-
-        {/* Dark mode toggle */}
-        {mounted && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 2 }}
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            whileHover={{ opacity: 1, scale: 1.15 }}
-            className="text-charcoal/55 dark:text-cream/55 hover:text-charcoal dark:hover:text-cream transition-colors duration-300"
-            aria-label="Toggle dark mode"
-          >
-            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-          </motion.button>
-        )}
-      </nav>
-
-      {/* ── Mobile: top bar ── */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-cream/90 dark:bg-charcoal/90 backdrop-blur-md border-b border-charcoal/5 dark:border-cream/5">
-        <span className="font-body text-base text-charcoal dark:text-cream tracking-wide">
-          {COUPLE.partner1[0]}&thinsp;&amp;&thinsp;{COUPLE.partner2[0]}
-        </span>
-        <div className="flex items-center gap-5">
-          {NAV_ITEMS.slice(0, 4).map((item) => (
-            <button
-              key={item.href}
-              onClick={() => scrollTo(item.href)}
-              className={`text-[10px] tracking-widest uppercase font-body transition-colors duration-300 ${
-                activeSection === item.href.replace("#", "")
-                  ? "text-charcoal dark:text-cream"
-                  : "text-charcoal/40 dark:text-cream/40"
-              }`}
+        {/* Chapter marker: the numeral and title change as the river carries you on */}
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 overflow-hidden" aria-live="polite">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.p
+              key={active}
+              initial={{ y: "110%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "-110%" }}
+              transition={{ duration: 0.6, ease: EXPO }}
+              className="eyebrow flex items-center gap-3 py-1 text-ink/70"
             >
-              {item.label}
-            </button>
-          ))}
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-charcoal/50 dark:text-cream/50"
-              aria-label="Toggle dark mode"
-            >
-              {theme === "dark" ? <Sun size={12} /> : <Moon size={12} />}
-            </button>
-          )}
+              <span className="font-serif text-base normal-case italic tracking-normal text-gold">{ROMAN[index]}.</span>
+              {NAV_ITEMS[index].label}
+            </motion.p>
+          </AnimatePresence>
         </div>
-      </nav>
+
+        {/* Menu toggle: two bars that cross. The music button sits just left of it. */}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="site-menu"
+          className={`${CHIP} relative`}
+        >
+          <span
+            className={`absolute h-px w-4 bg-current transition-transform duration-500 ease-expo ${
+              open ? "rotate-45" : "-translate-y-[3px]"
+            }`}
+          />
+          <span
+            className={`absolute h-px w-4 bg-current transition-transform duration-500 ease-expo ${
+              open ? "-rotate-45" : "translate-y-[3px]"
+            }`}
+          />
+        </button>
+      </motion.header>
+
+      {/* Full-screen menu: the chapters of the journey */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="site-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            initial={{ clipPath: "circle(0% at calc(100% - 2.4rem) 2.4rem)" }}
+            animate={{ clipPath: "circle(150% at calc(100% - 2.4rem) 2.4rem)" }}
+            exit={{ clipPath: "circle(0% at calc(100% - 2.4rem) 2.4rem)" }}
+            transition={{ duration: 0.9, ease: EXPO }}
+            className="fixed inset-0 z-40 flex flex-col justify-between bg-paper-2 px-6 pt-28 pb-10 text-ink md:px-16 md:pt-36"
+          >
+            <ul className="flex flex-col gap-1 md:gap-2">
+              {NAV_ITEMS.map((item, i) => (
+                <li key={item.href} className="overflow-hidden">
+                  <motion.button
+                    type="button"
+                    initial={{ y: "110%" }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.9, ease: EXPO, delay: 0.2 + i * 0.07 }}
+                    onClick={() => {
+                      setOpen(false);
+                      scrollToChapter(item.href.slice(1));
+                    }}
+                    className="display group flex w-full items-baseline gap-5 py-1 text-left text-[clamp(2.6rem,9vw,6.5rem)]"
+                  >
+                    <span className="w-8 font-serif text-lg italic tracking-normal text-gold">{ROMAN[i]}.</span>
+                    <span
+                      className={`transition-transform duration-700 ease-expo group-hover:translate-x-4 ${
+                        i === index ? "italic text-gold" : ""
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </motion.button>
+                </li>
+              ))}
+            </ul>
+            <p className="eyebrow text-ink/55">
+              {WEDDING.date} · {WEDDING.location} · {WEDDING.hashtag}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -10,6 +10,7 @@ export const COUPLE = {
 
 export const WEDDING = {
   date: "July 27, 2026",
+  dateISO: "2026-07-27T10:30:00+05:30",
   dateShort: "07.27.2026",
   dayOfWeek: "Monday",
   time: "10:30 AM",
